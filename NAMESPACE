@@ -2,3 +2,4 @@
 
 export(augment_posterior_linpred)
 export(augment_posterior_predict)
+export(ggs_rstanarm)

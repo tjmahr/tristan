@@ -17,10 +17,15 @@ You can install tristan from github with:
 devtools::install_github("tjmahr/tristan")
 ```
 
-A simple RStanARM model
------------------------
+Overview of helpers
+-------------------
 
-Let's fit a simple linear model.
+`augment_posterior_predict()` and `augment_posterior_linpred()` generate new data predictions and fitted means for new datasets using RStanARM's `posterior_predict()` and `posterior_linpred()`. The RStanARM functions return giant matrices of predicted values, but these functions return a long data-frame of predicted values along with the values of the predictor variables. The name *augment* follows the convention of the broom package where `augment()` refers to augmenting a data-set with model predictions.
+
+Example
+-------
+
+Fit a simple linear model.
 
 ``` r
 library(tidyverse)
@@ -32,7 +37,8 @@ scale_v <- function(...) as.vector(scale(...))
 iris$z.Sepal.Length <- scale_v(iris$Sepal.Length)
 iris$z.Petal.Length <- scale_v(iris$Petal.Length)
 
-iris[2, "Species"] <- NA
+# Just to ensure that NA values don't break the prediction function
+iris[2:6, "Species"] <- NA
 
 model <- stan_glm(
   z.Sepal.Length ~ z.Petal.Length * Species,
@@ -41,9 +47,11 @@ model <- stan_glm(
   prior = normal(0, 2))
 ```
 
-Let's plot some samples of the model's linear prediction for the mean. If classical model provide a single "line of best fit", Bayesian models provide a distribution "lines of plausible fit". We'd like to visualize 100 of these lines alongside the data.
+### Posterior linear predictions (expected values)
 
-In classical models, getting the fitted values is easily done by adding a column of `fitted()` values to dataframe or using `predict()` on some new observations. (In `broom` terminology, `augment()` the data-set with model predictions.)
+Let's plot some samples of the model's linear prediction for the mean. If classical model provide a single "line of best fit", Bayesian models provide a distribution "lines of plausible fit". We'd like to visualize 100 of these lines alongside the raw data.
+
+In classical models, getting the fitted values is easily done by adding a column of `fitted()` values to dataframe or using `predict()` on some new observations.
 
 Because the posterior of this model contains 4000 such fitted or predicted values, more data wrangling and reshaping is required. `augment_posterior_linpred()` automates this task by producing a long dataframe with one row per posterior fitted value.
 
@@ -51,25 +59,25 @@ Here, we tell the model that we want just 100 of the lines.
 
 ``` r
 # Get the fitted means of the data for 100 samples of the posterior distribution
-data_with_linpreds <- augment_posterior_linpred(
+linear_preds <- augment_posterior_linpred(
   model = model, 
   newdata = iris, 
   nsamples = 100)
-data_with_linpreds
-#> # A tibble: 14,900 × 10
-#>    ..obs PosteriorDraw PosteriorLinPred Sepal.Length Sepal.Width
-#>    <int>         <int>            <dbl>        <dbl>       <dbl>
-#> 1      1            72       -1.0148344          5.1         3.5
-#> 2      1             5       -1.0661607          5.1         3.5
-#> 3      1            10       -1.0342837          5.1         3.5
-#> 4      1            14       -1.0305309          5.1         3.5
-#> 5      1            96       -1.0196355          5.1         3.5
-#> 6      1            34       -0.8913152          5.1         3.5
-#> 7      1            90       -1.0659340          5.1         3.5
-#> 8      1            53       -1.0175056          5.1         3.5
-#> 9      1            97       -1.0756757          5.1         3.5
-#> 10     1            30       -1.0809511          5.1         3.5
-#> # ... with 14,890 more rows, and 5 more variables: Petal.Length <dbl>,
+linear_preds
+#> # A tibble: 14,500 × 10
+#>    .observation .draw .posterior_value Sepal.Length Sepal.Width
+#>           <int> <int>            <dbl>        <dbl>       <dbl>
+#> 1             1     1       -0.9555364          5.1         3.5
+#> 2             1     2       -1.0088047          5.1         3.5
+#> 3             1     3       -1.1039410          5.1         3.5
+#> 4             1     4       -1.0387694          5.1         3.5
+#> 5             1     5       -0.9874877          5.1         3.5
+#> 6             1     6       -1.1651138          5.1         3.5
+#> 7             1     7       -0.9117757          5.1         3.5
+#> 8             1     8       -1.0268685          5.1         3.5
+#> 9             1     9       -1.0946847          5.1         3.5
+#> 10            1    10       -1.1113353          5.1         3.5
+#> # ... with 14,490 more rows, and 5 more variables: Petal.Length <dbl>,
 #> #   Petal.Width <dbl>, Species <fctr>, z.Sepal.Length <dbl>,
 #> #   z.Petal.Length <dbl>
 ```
@@ -81,8 +89,8 @@ unscale <- function(scaled, original) {
   (scaled * sd(original, na.rm = TRUE)) + mean(original, na.rm = TRUE)
 }
 
-data_with_linpreds$PosteriorLinPred <- unscale(
-  scaled = data_with_linpreds$PosteriorLinPred, 
+linear_preds$.posterior_value <- unscale(
+  scaled = linear_preds$.posterior_value, 
   original = iris$Sepal.Length)
 ```
 
@@ -92,51 +100,90 @@ Now, we can do a spaghetti plot of linear predictions.
 ggplot(iris) + 
   aes(x = Petal.Length, y = Sepal.Length, color = Species) + 
   geom_point() + 
-  geom_line(aes(y = PosteriorLinPred, group = interaction(Species, PosteriorDraw)), 
-            data = data_with_linpreds, alpha = .20)
+  geom_line(aes(y = .posterior_value, group = interaction(Species, .draw)), 
+            data = linear_preds, alpha = .20)
 ```
 
-![](README-many-lines-of-best-fit-1.png)
+![](fig/README-many-lines-of-best-fit-1.png)
+
+### Posterior predictions (simulated new data)
 
 `augment_posterior_predict()` similarly tidies values from the `posterior_predict()` function. `posterior_predict()` incorporates the error terms from the model, so it can be used predict new fake data from the model.
 
-Below, we can inspect whether 95% of the data falls inside the 95% interval of posterior-predicted values.
+Let's create a range of values within each species, and get posterior predicted values.
 
 ``` r
-# Get the fitted means of the data for 100 samples of the posterior distribution
-posterior_preds <- augment_posterior_predict(
-  model = model, 
-  newdata = iris)
-posterior_preds
-#> # A tibble: 596,000 × 10
-#>    ..obs PosteriorDraw PosteriorPred Sepal.Length Sepal.Width Petal.Length
-#>    <int>         <int>         <dbl>        <dbl>       <dbl>        <dbl>
-#> 1      1             1    -0.5487679          5.1         3.5          1.4
-#> 2      1             2    -0.5736016          5.1         3.5          1.4
-#> 3      1             3    -0.7999946          5.1         3.5          1.4
-#> 4      1             4    -1.0044920          5.1         3.5          1.4
-#> 5      1             5    -1.0299800          5.1         3.5          1.4
-#> 6      1             6    -1.6915048          5.1         3.5          1.4
-#> 7      1             7    -0.1846787          5.1         3.5          1.4
-#> 8      1             8    -1.3902978          5.1         3.5          1.4
-#> 9      1             9    -0.8894498          5.1         3.5          1.4
-#> 10     1            10    -2.1690012          5.1         3.5          1.4
-#> # ... with 595,990 more rows, and 4 more variables: Petal.Width <dbl>,
-#> #   Species <fctr>, z.Sepal.Length <dbl>, z.Petal.Length <dbl>
+library(modelr)
 
-posterior_preds$PosteriorPred <- unscale(
-  scaled = posterior_preds$PosteriorPred, 
+# Within each species, generate a sequence of z.Petal.Length values
+newdata <- iris %>% 
+  group_by(Species) %>% 
+  # Expand a bit so that the points to bulge out left/right sides of the
+  # uncertainty ribbon
+  data_grid(z.Petal.Length = z.Petal.Length %>% 
+              seq_range(n = 80, expand = .10)) %>% 
+  ungroup()
+
+newdata$Petal.Length <- unscale(newdata$z.Petal.Length, iris$Petal.Length)
+
+# Get posterior predictions
+posterior_preds <- augment_posterior_predict(model, newdata)
+posterior_preds
+#> # A tibble: 960,000 × 6
+#>    .observation .draw .posterior_value Species z.Petal.Length Petal.Length
+#>           <int> <int>            <dbl>  <fctr>          <dbl>        <dbl>
+#> 1             1     1       -1.3432833  setosa      -1.587834        0.955
+#> 2             1     2       -0.4467146  setosa      -1.587834        0.955
+#> 3             1     3       -1.0401077  setosa      -1.587834        0.955
+#> 4             1     4       -0.8529511  setosa      -1.587834        0.955
+#> 5             1     5       -0.9461484  setosa      -1.587834        0.955
+#> 6             1     6       -1.1206313  setosa      -1.587834        0.955
+#> 7             1     7       -1.1583492  setosa      -1.587834        0.955
+#> 8             1     8       -0.8358101  setosa      -1.587834        0.955
+#> 9             1     9       -1.3133665  setosa      -1.587834        0.955
+#> 10            1    10       -1.0468072  setosa      -1.587834        0.955
+#> # ... with 959,990 more rows
+
+posterior_preds$.posterior_value <- unscale(
+  scaled = posterior_preds$.posterior_value, 
   original = iris$Sepal.Length)
 ```
+
+Now, we can inspect whether 95% of the data falls inside the 95% interval of posterior-predicted values.
 
 ``` r
 ggplot(iris) + 
   aes(x = Petal.Length, y = Sepal.Length, color = Species) + 
   geom_point() + 
-  stat_summary(aes(y = PosteriorPred, group = Species, color = NULL), 
+  stat_summary(aes(y = .posterior_value, group = Species, color = NULL), 
                data = posterior_preds, alpha = 0.4, fill = "grey60", 
                geom = "ribbon", 
                fun.data = median_hilow, fun.args = list(conf.int = .95))
 ```
 
-![](README-95-percent-intervals-1.png)
+![](fig/README-95-percent-intervals-1.png)
+
+### ggmc support
+
+ggmc provides [a lot of magic](http://xavier-fim.net/packages/ggmcmc/#importing-mcmc-samples-into-ggmcmc-using-ggs). The general ggmcmc workflow is to create a tidy dataframe `ggs()` and plug that into the package's plotting functions. For example, here is how the package does the histograms of each parameter.
+
+``` r
+library(ggmcmc)
+gg_model <- ggs(model)
+  
+ggs_histogram(gg_model) + facet_wrap("Parameter", scales = "free_x")
+```
+
+![](fig/README-histogram-no-name-1.png)
+
+But look, for RStanARM models, the package lost the parameter names!
+
+`ggs_rstanarm()` is a small function that imitates the output of `ggs()` but tries to keep the original parameter names. That means that it drops the generated quantity `"mean_PPD"` as well.
+
+``` r
+gg_model2 <- ggs_rstanarm(model)
+  
+ggs_histogram(gg_model2) + facet_wrap("Parameter", scales = "free_x")
+```
+
+![](fig/README-histogram-yes-name-1.png)
