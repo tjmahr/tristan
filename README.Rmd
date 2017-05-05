@@ -79,7 +79,8 @@ values, more data wrangling and reshaping is required.
 `augment_posterior_linpred()` automates this task by producing a long dataframe
 with one row per posterior fitted value.
 
-Here, we tell the model that we want just 100 of the lines.
+Here, we tell the model that we want just 100 of those lines (i.e., 100 samples
+from the posterior distribution).
 
 ```{r}
 # Get the fitted means of the data for 100 samples of the posterior distribution
@@ -144,6 +145,9 @@ posterior_preds$.posterior_value <- unscale(
   original = iris$Sepal.Length)
 ```
 
+Take a second to appreciate the size of that table. It has 4000 predictions for
+each the `r nrow(newdata)` observations in `newdata`.
+
 Now, we can inspect whether 95% of the data falls inside the 95% interval of
 posterior-predicted values.
 
@@ -160,11 +164,11 @@ ggplot(iris) +
 
 ### ggmc support
 
-ggmc provides [a lot of
-magic](http://xavier-fim.net/packages/ggmcmc/#importing-mcmc-samples-into-ggmcmc-using-ggs). 
-The general ggmcmc workflow is to create a tidy dataframe `ggs()` and plug that
-into the package's plotting functions. For example, here is how the package 
-does the histograms of each parameter.
+ggmc provides [a lot of 
+magic](http://xavier-fim.net/packages/ggmcmc/#importing-mcmc-samples-into-ggmcmc-using-ggs).
+The general ggmcmc workflow is to create a tidy dataframe using `ggs()` and plug
+it that into the package's plotting functions. For example, here is how we can
+inspect the each parameter value using histograms.
 
 ```{r histogram-no-name, fig.width=6, fig.height=4}
 library(ggmcmc)
@@ -173,11 +177,13 @@ gg_model <- ggs(model)
 ggs_histogram(gg_model) + facet_wrap("Parameter", scales = "free_x")
 ```
 
-But look, for RStanARM models, the package lost the parameter names!
+It's a magic one-liner. The `facet_wrap()` is just a tweak to put things in a
+grid instead of single column. But look, the plot lost the names of parameters
+from the model!
 
 `ggs_rstanarm()` is a small function that imitates the output of `ggs()` 
 but tries to keep the original parameter names. That means that it drops the
-generated quantity `"mean_PPD"` as well.
+generated quantity `"mean_PPD"` as well. 
 
 ```{r histogram-yes-name, fig.width=6, fig.height=4}
 gg_model2 <- ggs_rstanarm(model)

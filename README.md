@@ -55,7 +55,7 @@ In classical models, getting the fitted values is easily done by adding a column
 
 Because the posterior of this model contains 4000 such fitted or predicted values, more data wrangling and reshaping is required. `augment_posterior_linpred()` automates this task by producing a long dataframe with one row per posterior fitted value.
 
-Here, we tell the model that we want just 100 of the lines.
+Here, we tell the model that we want just 100 of those lines (i.e., 100 samples from the posterior distribution).
 
 ``` r
 # Get the fitted means of the data for 100 samples of the posterior distribution
@@ -67,16 +67,16 @@ linear_preds
 #> # A tibble: 14,500 × 10
 #>    .observation .draw .posterior_value Sepal.Length Sepal.Width
 #>           <int> <int>            <dbl>        <dbl>       <dbl>
-#> 1             1     1       -0.9555364          5.1         3.5
-#> 2             1     2       -1.0088047          5.1         3.5
-#> 3             1     3       -1.1039410          5.1         3.5
-#> 4             1     4       -1.0387694          5.1         3.5
-#> 5             1     5       -0.9874877          5.1         3.5
-#> 6             1     6       -1.1651138          5.1         3.5
-#> 7             1     7       -0.9117757          5.1         3.5
-#> 8             1     8       -1.0268685          5.1         3.5
-#> 9             1     9       -1.0946847          5.1         3.5
-#> 10            1    10       -1.1113353          5.1         3.5
+#> 1             1     1       -1.0432837          5.1         3.5
+#> 2             1     2       -1.0005566          5.1         3.5
+#> 3             1     3       -1.1015455          5.1         3.5
+#> 4             1     4       -0.9971867          5.1         3.5
+#> 5             1     5       -1.0668197          5.1         3.5
+#> 6             1     6       -0.9760993          5.1         3.5
+#> 7             1     7       -1.0638527          5.1         3.5
+#> 8             1     8       -0.8788901          5.1         3.5
+#> 9             1     9       -1.0069192          5.1         3.5
+#> 10            1    10       -0.9800662          5.1         3.5
 #> # ... with 14,490 more rows, and 5 more variables: Petal.Length <dbl>,
 #> #   Petal.Width <dbl>, Species <fctr>, z.Sepal.Length <dbl>,
 #> #   z.Petal.Length <dbl>
@@ -132,22 +132,24 @@ posterior_preds
 #> # A tibble: 960,000 × 6
 #>    .observation .draw .posterior_value Species z.Petal.Length Petal.Length
 #>           <int> <int>            <dbl>  <fctr>          <dbl>        <dbl>
-#> 1             1     1       -1.3432833  setosa      -1.587834        0.955
-#> 2             1     2       -0.4467146  setosa      -1.587834        0.955
-#> 3             1     3       -1.0401077  setosa      -1.587834        0.955
-#> 4             1     4       -0.8529511  setosa      -1.587834        0.955
-#> 5             1     5       -0.9461484  setosa      -1.587834        0.955
-#> 6             1     6       -1.1206313  setosa      -1.587834        0.955
-#> 7             1     7       -1.1583492  setosa      -1.587834        0.955
-#> 8             1     8       -0.8358101  setosa      -1.587834        0.955
-#> 9             1     9       -1.3133665  setosa      -1.587834        0.955
-#> 10            1    10       -1.0468072  setosa      -1.587834        0.955
+#> 1             1     1      -2.38982730  setosa      -1.587834        0.955
+#> 2             1     2      -1.03517975  setosa      -1.587834        0.955
+#> 3             1     3      -1.08341356  setosa      -1.587834        0.955
+#> 4             1     4      -0.26876517  setosa      -1.587834        0.955
+#> 5             1     5      -1.03284341  setosa      -1.587834        0.955
+#> 6             1     6      -1.14590049  setosa      -1.587834        0.955
+#> 7             1     7      -1.52877394  setosa      -1.587834        0.955
+#> 8             1     8      -0.05161558  setosa      -1.587834        0.955
+#> 9             1     9      -1.37156287  setosa      -1.587834        0.955
+#> 10            1    10      -2.10312155  setosa      -1.587834        0.955
 #> # ... with 959,990 more rows
 
 posterior_preds$.posterior_value <- unscale(
   scaled = posterior_preds$.posterior_value, 
   original = iris$Sepal.Length)
 ```
+
+Take a second to appreciate the size of that table. It has 4000 predictions for each the 320 observations in `newdata`.
 
 Now, we can inspect whether 95% of the data falls inside the 95% interval of posterior-predicted values.
 
@@ -165,7 +167,7 @@ ggplot(iris) +
 
 ### ggmc support
 
-ggmc provides [a lot of magic](http://xavier-fim.net/packages/ggmcmc/#importing-mcmc-samples-into-ggmcmc-using-ggs). The general ggmcmc workflow is to create a tidy dataframe `ggs()` and plug that into the package's plotting functions. For example, here is how the package does the histograms of each parameter.
+ggmc provides [a lot of magic](http://xavier-fim.net/packages/ggmcmc/#importing-mcmc-samples-into-ggmcmc-using-ggs). The general ggmcmc workflow is to create a tidy dataframe using `ggs()` and plug it that into the package's plotting functions. For example, here is how we can inspect the each parameter value using histograms.
 
 ``` r
 library(ggmcmc)
@@ -176,7 +178,7 @@ ggs_histogram(gg_model) + facet_wrap("Parameter", scales = "free_x")
 
 ![](fig/README-histogram-no-name-1.png)
 
-But look, for RStanARM models, the package lost the parameter names!
+It's a magic one-liner. The `facet_wrap()` is just a tweak to put things in a grid instead of single column. But look, the plot lost the names of parameters from the model!
 
 `ggs_rstanarm()` is a small function that imitates the output of `ggs()` but tries to keep the original parameter names. That means that it drops the generated quantity `"mean_PPD"` as well.
 
