@@ -35,10 +35,15 @@ devtools::install_github("tjmahr/tristan")
 `augment_posterior_predict()` and `augment_posterior_linpred()` generate new 
 data predictions and fitted means for new datasets using RStanARM's 
 `posterior_predict()` and `posterior_linpred()`. The RStanARM functions return 
-giant matrices of predicted values, but these functions return a long data-frame
+giant matrices of predicted values, but these functions return a long dataframe
 of predicted values along with the values of the predictor variables. The name
 _augment_ follows the convention of the broom package where `augment()` refers
 to augmenting a data-set with model predictions.
+
+The `ggs()` function in the ggmcmc package produces a tidy dataframe of MCMC
+samples. That function doesn't return the original parameter names for RStanARM
+models. `ggs_rstanarm()` rectifies this problem.
+
 
 ## Example
 
@@ -63,6 +68,11 @@ model <- stan_glm(
   family = gaussian(),
   prior = normal(0, 2))
 ```
+
+```{r}
+print(model)
+```
+
 
 ### Posterior linear predictions (expected values)
 
@@ -105,7 +115,7 @@ linear_preds$.posterior_value <- unscale(
 
 Now, we can do a spaghetti plot of linear predictions. 
 
-```{r many-lines-of-best-fit, fig.height=4, fig.width=6}
+```{r many-lines-of-best-fit, fig.height = 4, fig.width = 6}
 ggplot(iris) + 
   aes(x = Petal.Length, y = Sepal.Length, color = Species) + 
   geom_point() + 
@@ -119,8 +129,8 @@ ggplot(iris) +
 `posterior_predict()` function. `posterior_predict()` incorporates the error
 terms from the model, so it can be used predict new fake data from the model.
 
-Let's create a range of values within each species, and get posterior predicted
-values.
+Let's create a range of values within each species, and get posterior 
+predictions for those values.
 
 ```{r}
 library(modelr)
@@ -128,8 +138,8 @@ library(modelr)
 # Within each species, generate a sequence of z.Petal.Length values
 newdata <- iris %>% 
   group_by(Species) %>% 
-  # Expand a bit so that the points to bulge out left/right sides of the
-  # uncertainty ribbon
+  # Expand the range x value a little bit so that the points do not bulge out
+  # left/right sides of the uncertainty ribbon in the plot
   data_grid(z.Petal.Length = z.Petal.Length %>% 
               seq_range(n = 80, expand = .10)) %>% 
   ungroup()
@@ -148,10 +158,10 @@ posterior_preds$.posterior_value <- unscale(
 Take a second to appreciate the size of that table. It has 4000 predictions for
 each the `r nrow(newdata)` observations in `newdata`.
 
-Now, we can inspect whether 95% of the data falls inside the 95% interval of
-posterior-predicted values.
+Now, we might inspect whether 95% of the data falls inside the 95% interval of
+posterior-predicted values (among other questions we could ask the model.)
 
-```{r 95-percent-intervals, fig.height=4, fig.width=6}
+```{r 95-percent-intervals, fig.height = 4, fig.width = 6}
 ggplot(iris) + 
   aes(x = Petal.Length, y = Sepal.Length, color = Species) + 
   geom_point() + 
@@ -168,26 +178,37 @@ ggmc provides [a lot of
 magic](http://xavier-fim.net/packages/ggmcmc/#importing-mcmc-samples-into-ggmcmc-using-ggs).
 The general ggmcmc workflow is to create a tidy dataframe using `ggs()` and plug
 it that into the package's plotting functions. For example, here is how we can
-inspect the each parameter value using histograms.
+inspect the each parameter value using histograms and interval plots.
 
-```{r histogram-no-name, fig.width=6, fig.height=4}
+```{r ggmc-no-name, fig.width=4, fig.height=4, fig.show = "hold"}
 library(ggmcmc)
 gg_model <- ggs(model)
   
-ggs_histogram(gg_model) + facet_wrap("Parameter", scales = "free_x")
+# Facet wrap so that values are in a grid, not a single column.
+ggs_histogram(gg_model) + 
+  facet_wrap("Parameter", scales = "free_x")
+
+# Remap y-aesthetic so that the parameters read from top-to-bottom in their
+# original factor ordering.
+ggs_caterpillar(gg_model, line = 0) + 
+  aes(y = forcats::fct_rev(Parameter)) + 
+  ylab(NULL)
 ```
 
-It's a magic one-liner. The `facet_wrap()` is just a tweak to put things in a
-grid instead of single column. But look, the plot lost the names of parameters
-from the model!
+The package is magically convenient. But look, the plot lost the names of
+parameters from the model!
 
-`ggs_rstanarm()` is a small function that imitates the output of `ggs()` 
-but tries to keep the original parameter names. That means that it drops the
-generated quantity `"mean_PPD"` as well. 
+`ggs_rstanarm()` is a small function that imitates the output of `ggs()` but
+tries to keep the original parameter names. It also drops the non-parameter
+`"mean_PPD"` (the model's prediction for a completely average observation.)
 
-```{r histogram-yes-name, fig.width=6, fig.height=4}
+```{r ggmc-yes-name, fig.width=4, fig.height=4, fig.show = "hold"}
 gg_model2 <- ggs_rstanarm(model)
-  
-ggs_histogram(gg_model2) + facet_wrap("Parameter", scales = "free_x")
-```
 
+ggs_histogram(gg_model2) + 
+  facet_wrap("Parameter", scales = "free_x")
+
+ggs_caterpillar(gg_model2, line = 0) + 
+  aes(y = forcats::fct_rev(Parameter)) + 
+  ylab(NULL)
+```
