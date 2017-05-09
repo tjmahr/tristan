@@ -2,6 +2,8 @@
 
 export(augment_posterior_linpred)
 export(augment_posterior_predict)
+export(calculate_model_r2)
+export(calculate_r2)
 export(ggs_rstanarm)
 export(stan_to_glm)
 export(stan_to_lm)

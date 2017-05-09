@@ -115,16 +115,24 @@ augment_posterior_linpred <- function(model, newdata = NULL, ..., nsamples = NUL
 #' Create tidy dataframe for ggmcmc from an RStanARM model
 #'
 #' @param model a model fit with [RStanARM][rstanarm::rstanarm]
+#' @param r2 whether to include R2 as a parameter value
 #' @return a data-frame (a [tibble::tibble()]) of MCMC sampling information
 #'   suitable for use with the [ggmcmc package][ggmcmc::ggmcmc].
 #' @export
-ggs_rstanarm <- function(model) {
+ggs_rstanarm <- function(model, r2 = FALSE) {
   stopifnot(inherits(model, "stanreg"))
   chains <- as.array(model)
   dimnames(chains)[["chains"]] <- seq_along(dimnames(chains)[["chains"]])
   long <- reshape2::melt(chains, c("Iteration", "Chain", "Parameter"), "value")
-
   long <- tibble::as.tibble(long)
+  if (r2) {
+    r2_steps <- dplyr::distinct_(long, ~ Iteration, ~ Chain)
+    r2_steps <- dplyr::arrange_(r2_steps, ~ Chain, ~ Iteration)
+    r2_steps$Parameter <- "R2"
+    r2_steps$value <- calculate_model_r2(model)
+    long <- rbind(long, r2_steps)
+  }
+
   attr(long, "nParameters") <- length(unique(long$Parameter))
 
   # Copy the parameters that ggs would set and extract

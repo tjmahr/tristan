@@ -4,10 +4,12 @@
 \alias{ggs_rstanarm}
 \title{Create tidy dataframe for ggmcmc from an RStanARM model}
 \usage{
-ggs_rstanarm(model)
+ggs_rstanarm(model, r2 = FALSE)
 }
 \arguments{
 \item{model}{a model fit with \link[rstanarm:rstanarm]{RStanARM}}
+
+\item{r2}{whether to include R2 as a parameter value}
 }
 \value{
 a data-frame (a \code{\link[tibble:tibble]{tibble::tibble()}}) of MCMC sampling information

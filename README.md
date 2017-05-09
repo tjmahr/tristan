@@ -60,12 +60,12 @@ print(model)
 #> 
 #> Estimates:
 #>                                  Median MAD_SD
-#> (Intercept)                       0.0    0.6  
+#> (Intercept)                       0.0    0.7  
 #> z.Petal.Length                    0.8    0.5  
-#> Speciesversicolor                -0.4    0.6  
+#> Speciesversicolor                -0.4    0.7  
 #> Speciesvirginica                 -1.2    0.7  
-#> z.Petal.Length:Speciesversicolor  1.0    0.5  
-#> z.Petal.Length:Speciesvirginica   1.3    0.5  
+#> z.Petal.Length:Speciesversicolor  1.0    0.6  
+#> z.Petal.Length:Speciesvirginica   1.4    0.6  
 #> sigma                             0.4    0.0  
 #> 
 #> Sample avg. posterior predictive 
@@ -97,16 +97,16 @@ linear_preds
 #> # A tibble: 14,500 × 10
 #>    .observation .draw .posterior_value Sepal.Length Sepal.Width
 #>           <int> <int>            <dbl>        <dbl>       <dbl>
-#> 1             1     1       -1.0612308          5.1         3.5
-#> 2             1     2       -1.0358849          5.1         3.5
-#> 3             1     3       -1.0462001          5.1         3.5
-#> 4             1     4       -0.9362126          5.1         3.5
-#> 5             1     5       -1.0459532          5.1         3.5
-#> 6             1     6       -0.9639494          5.1         3.5
-#> 7             1     7       -0.9965872          5.1         3.5
-#> 8             1     8       -1.0476192          5.1         3.5
-#> 9             1     9       -1.0065306          5.1         3.5
-#> 10            1    10       -1.0160694          5.1         3.5
+#> 1             1     1       -1.0599905          5.1         3.5
+#> 2             1     2       -1.0113985          5.1         3.5
+#> 3             1     3       -1.0057100          5.1         3.5
+#> 4             1     4       -1.1183339          5.1         3.5
+#> 5             1     5       -1.0699625          5.1         3.5
+#> 6             1     6       -0.9554345          5.1         3.5
+#> 7             1     7       -1.1348548          5.1         3.5
+#> 8             1     8       -1.0669204          5.1         3.5
+#> 9             1     9       -0.9974893          5.1         3.5
+#> 10            1    10       -1.0709174          5.1         3.5
 #> # ... with 14,490 more rows, and 5 more variables: Petal.Length <dbl>,
 #> #   Petal.Width <dbl>, Species <fctr>, z.Sepal.Length <dbl>,
 #> #   z.Petal.Length <dbl>
@@ -162,16 +162,16 @@ posterior_preds
 #> # A tibble: 960,000 × 6
 #>    .observation .draw .posterior_value Species z.Petal.Length Petal.Length
 #>           <int> <int>            <dbl>  <fctr>          <dbl>        <dbl>
-#> 1             1     1       -1.5285999  setosa      -1.587834        0.955
-#> 2             1     2       -0.8081384  setosa      -1.587834        0.955
-#> 3             1     3       -0.7601654  setosa      -1.587834        0.955
-#> 4             1     4       -1.5201327  setosa      -1.587834        0.955
-#> 5             1     5       -1.9263846  setosa      -1.587834        0.955
-#> 6             1     6       -1.2894778  setosa      -1.587834        0.955
-#> 7             1     7       -2.3929301  setosa      -1.587834        0.955
-#> 8             1     8       -1.0725481  setosa      -1.587834        0.955
-#> 9             1     9       -1.3798512  setosa      -1.587834        0.955
-#> 10            1    10       -0.7539212  setosa      -1.587834        0.955
+#> 1             1     1        -1.129239  setosa      -1.587834        0.955
+#> 2             1     2        -1.999570  setosa      -1.587834        0.955
+#> 3             1     3        -2.066203  setosa      -1.587834        0.955
+#> 4             1     4        -1.838178  setosa      -1.587834        0.955
+#> 5             1     5        -1.418832  setosa      -1.587834        0.955
+#> 6             1     6        -1.082069  setosa      -1.587834        0.955
+#> 7             1     7        -1.278863  setosa      -1.587834        0.955
+#> 8             1     8        -1.160216  setosa      -1.587834        0.955
+#> 9             1     9        -1.920334  setosa      -1.587834        0.955
+#> 10            1    10        -1.290785  setosa      -1.587834        0.955
 #> # ... with 959,990 more rows
 
 posterior_preds$.posterior_value <- unscale(
@@ -280,3 +280,67 @@ ggs_caterpillar(gg_model2, line = 0) +
 ```
 
 ![](fig/README-ggmc-yes-name-1.png)![](fig/README-ggmc-yes-name-2.png)
+
+### Calculate *R*<sup>2</sup>
+
+`calculate_model_r2()` returns the unadjusted *R*<sup>2</sup> for each draw of the posterior distribution.
+
+``` r
+df_r2 <- data_frame(
+  R2 = calculate_model_r2(model)
+)
+df_r2
+#> # A tibble: 4,000 × 1
+#>           R2
+#>        <dbl>
+#> 1  0.8310305
+#> 2  0.8301309
+#> 3  0.8237946
+#> 4  0.8289572
+#> 5  0.8310537
+#> 6  0.8207312
+#> 7  0.8262780
+#> 8  0.8259409
+#> 9  0.8312654
+#> 10 0.8322098
+#> # ... with 3,990 more rows
+```
+
+Now, we can compare the difference between highest-posterior intervals and equal-tailed intervals.
+
+``` r
+get_interval_edges <- function(prob) {
+  tail <- (1 - prob) / 2
+  c(tail, 1 - tail)
+}
+
+hpd <- coda::HPDinterval(coda::as.mcmc(df_r2$R2), prob = 0.95)
+ci95 <- quantile(df_r2$R2, get_interval_edges(.95))
+
+# Different widths
+max(hpd) - min(hpd)
+#> [1] 0.01464609
+max(ci95) - min(ci95)
+#> [1] 0.01655731
+```
+
+And we can plot the distribution of the *R*<sup>2</sup> values.
+
+``` r
+cis <- data_frame(
+  Method = c("HPD", "HPD", "Equal Tail", "Equal Tail"),
+  Value = c(as.vector(hpd), ci95))
+
+
+ggplot(df_r2) + 
+  aes(x = R2) + 
+  geom_histogram() + 
+  geom_vline(aes(xintercept = Value, color = Method), 
+             data = cis, size = 1, linetype = "dashed") + 
+  labs(color = "95% interval",
+       x = expression(R^2),
+       y = "Num. posterior samples")
+#> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](fig/README-r2-histogram-1.png)

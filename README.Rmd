@@ -243,3 +243,52 @@ ggs_caterpillar(gg_model2, line = 0) +
   aes(y = forcats::fct_rev(Parameter)) + 
   ylab(NULL)
 ```
+
+
+### Calculate _R_<sup>2</sup>
+
+`calculate_model_r2()` returns the unadjusted _R_<sup>2</sup> for each draw of
+the posterior distribution.
+
+```{r}
+df_r2 <- data_frame(
+  R2 = calculate_model_r2(model)
+)
+df_r2
+```
+
+Now, we can compare the difference between highest-posterior intervals and
+equal-tailed intervals.
+
+```{r}
+get_interval_edges <- function(prob) {
+  tail <- (1 - prob) / 2
+  c(tail, 1 - tail)
+}
+
+hpd <- coda::HPDinterval(coda::as.mcmc(df_r2$R2), prob = 0.95)
+ci95 <- quantile(df_r2$R2, get_interval_edges(.95))
+
+# Different widths
+max(hpd) - min(hpd)
+max(ci95) - min(ci95)
+```
+
+And we can plot the distribution of the _R_<sup>2</sup> values.
+
+```{r r2-histogram, fig.width=6, fig.height=4}
+cis <- data_frame(
+  Method = c("HPD", "HPD", "Equal Tail", "Equal Tail"),
+  Value = c(as.vector(hpd), ci95))
+
+
+ggplot(df_r2) + 
+  aes(x = R2) + 
+  geom_histogram() + 
+  geom_vline(aes(xintercept = Value, color = Method), 
+             data = cis, size = 1, linetype = "dashed") + 
+  labs(color = "95% interval",
+       x = expression(R^2),
+       y = "Num. posterior samples")
+```
+

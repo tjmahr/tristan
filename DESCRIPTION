@@ -16,3 +16,4 @@ Imports: tibble,
     ggmcmc,
     dplyr
 Roxygen: list(markdown = TRUE)
+Suggests: testthat
