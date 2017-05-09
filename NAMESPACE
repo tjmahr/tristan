@@ -3,3 +3,5 @@
 export(augment_posterior_linpred)
 export(augment_posterior_predict)
 export(ggs_rstanarm)
+export(stan_to_glm)
+export(stan_to_lm)

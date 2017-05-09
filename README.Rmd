@@ -40,6 +40,9 @@ of predicted values along with the values of the predictor variables. The name
 _augment_ follows the convention of the broom package where `augment()` refers
 to augmenting a data-set with model predictions.
 
+`stan_to_lm()` and `stan_to_glm()` provide a quick way to refit an RStanARM 
+model with its classical counterpart.
+
 The `ggs()` function in the ggmcmc package produces a tidy dataframe of MCMC
 samples. That function doesn't return the original parameter names for RStanARM
 models. `ggs_rstanarm()` rectifies this problem.
@@ -74,7 +77,7 @@ print(model)
 ```
 
 
-### Posterior linear predictions (expected values)
+### Posterior fitted values (linear predictions)
 
 Let's plot some samples of the model's linear prediction for the mean. If
 classical model provide a single "line of best fit", Bayesian models provide a
@@ -170,6 +173,34 @@ ggplot(iris) +
                geom = "ribbon", 
                fun.data = median_hilow, fun.args = list(conf.int = .95))
 ```
+
+### Refit RStanARM models with classical counterparts
+
+There are some quick functions for refitting RStanARM models using classical 
+versions. These functions basically inject the values of `model$formula` and 
+`model$data` into `lm()` or `glm()`. (Seriously, see the call sections in the
+two outputs below.) Therefore, don't use these functions for serious comparisons
+of classical versus Bayesian models.
+
+Refit with a linear model:
+
+```{r}
+arm::display(stan_to_lm(model))
+```
+
+Refit with a generalized linear model:
+
+```{r}
+arm::display(stan_to_glm(model))
+```
+
+```{r, echo = FALSE, eval = FALSE}
+arm::display(glm( z.Sepal.Length ~ z.Petal.Length * Species,
+  data = iris,
+  family = gaussian()))
+```
+
+
 
 
 ### ggmc support

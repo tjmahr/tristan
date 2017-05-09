@@ -22,6 +22,8 @@ Overview of helpers
 
 `augment_posterior_predict()` and `augment_posterior_linpred()` generate new data predictions and fitted means for new datasets using RStanARM's `posterior_predict()` and `posterior_linpred()`. The RStanARM functions return giant matrices of predicted values, but these functions return a long dataframe of predicted values along with the values of the predictor variables. The name *augment* follows the convention of the broom package where `augment()` refers to augmenting a data-set with model predictions.
 
+`stan_to_lm()` and `stan_to_glm()` provide a quick way to refit an RStanARM model with its classical counterpart.
+
 The `ggs()` function in the ggmcmc package produces a tidy dataframe of MCMC samples. That function doesn't return the original parameter names for RStanARM models. `ggs_rstanarm()` rectifies this problem.
 
 Example
@@ -58,12 +60,12 @@ print(model)
 #> 
 #> Estimates:
 #>                                  Median MAD_SD
-#> (Intercept)                       0.0    0.7  
+#> (Intercept)                       0.0    0.6  
 #> z.Petal.Length                    0.8    0.5  
-#> Speciesversicolor                -0.4    0.7  
+#> Speciesversicolor                -0.4    0.6  
 #> Speciesvirginica                 -1.2    0.7  
-#> z.Petal.Length:Speciesversicolor  1.0    0.6  
-#> z.Petal.Length:Speciesvirginica   1.3    0.6  
+#> z.Petal.Length:Speciesversicolor  1.0    0.5  
+#> z.Petal.Length:Speciesvirginica   1.3    0.5  
 #> sigma                             0.4    0.0  
 #> 
 #> Sample avg. posterior predictive 
@@ -75,7 +77,7 @@ print(model)
 #> For info on the priors used see help('prior_summary.stanreg').
 ```
 
-### Posterior linear predictions (expected values)
+### Posterior fitted values (linear predictions)
 
 Let's plot some samples of the model's linear prediction for the mean. If classical model provide a single "line of best fit", Bayesian models provide a distribution "lines of plausible fit". We'd like to visualize 100 of these lines alongside the raw data.
 
@@ -95,16 +97,16 @@ linear_preds
 #> # A tibble: 14,500 × 10
 #>    .observation .draw .posterior_value Sepal.Length Sepal.Width
 #>           <int> <int>            <dbl>        <dbl>       <dbl>
-#> 1             1     1       -0.9334127          5.1         3.5
-#> 2             1     2       -0.9276885          5.1         3.5
-#> 3             1     3       -1.0995938          5.1         3.5
-#> 4             1     4       -1.1792367          5.1         3.5
-#> 5             1     5       -1.1039049          5.1         3.5
-#> 6             1     6       -1.0226034          5.1         3.5
-#> 7             1     7       -1.0475187          5.1         3.5
-#> 8             1     8       -1.0552536          5.1         3.5
-#> 9             1     9       -1.0207303          5.1         3.5
-#> 10            1    10       -1.0227977          5.1         3.5
+#> 1             1     1       -1.0612308          5.1         3.5
+#> 2             1     2       -1.0358849          5.1         3.5
+#> 3             1     3       -1.0462001          5.1         3.5
+#> 4             1     4       -0.9362126          5.1         3.5
+#> 5             1     5       -1.0459532          5.1         3.5
+#> 6             1     6       -0.9639494          5.1         3.5
+#> 7             1     7       -0.9965872          5.1         3.5
+#> 8             1     8       -1.0476192          5.1         3.5
+#> 9             1     9       -1.0065306          5.1         3.5
+#> 10            1    10       -1.0160694          5.1         3.5
 #> # ... with 14,490 more rows, and 5 more variables: Petal.Length <dbl>,
 #> #   Petal.Width <dbl>, Species <fctr>, z.Sepal.Length <dbl>,
 #> #   z.Petal.Length <dbl>
@@ -160,16 +162,16 @@ posterior_preds
 #> # A tibble: 960,000 × 6
 #>    .observation .draw .posterior_value Species z.Petal.Length Petal.Length
 #>           <int> <int>            <dbl>  <fctr>          <dbl>        <dbl>
-#> 1             1     1       -1.2602653  setosa      -1.587834        0.955
-#> 2             1     2       -1.9470991  setosa      -1.587834        0.955
-#> 3             1     3       -1.6456993  setosa      -1.587834        0.955
-#> 4             1     4       -0.9419937  setosa      -1.587834        0.955
-#> 5             1     5       -1.7304336  setosa      -1.587834        0.955
-#> 6             1     6       -1.4875816  setosa      -1.587834        0.955
-#> 7             1     7       -1.0220343  setosa      -1.587834        0.955
-#> 8             1     8       -1.8504523  setosa      -1.587834        0.955
-#> 9             1     9       -1.3019188  setosa      -1.587834        0.955
-#> 10            1    10       -2.0197034  setosa      -1.587834        0.955
+#> 1             1     1       -1.5285999  setosa      -1.587834        0.955
+#> 2             1     2       -0.8081384  setosa      -1.587834        0.955
+#> 3             1     3       -0.7601654  setosa      -1.587834        0.955
+#> 4             1     4       -1.5201327  setosa      -1.587834        0.955
+#> 5             1     5       -1.9263846  setosa      -1.587834        0.955
+#> 6             1     6       -1.2894778  setosa      -1.587834        0.955
+#> 7             1     7       -2.3929301  setosa      -1.587834        0.955
+#> 8             1     8       -1.0725481  setosa      -1.587834        0.955
+#> 9             1     9       -1.3798512  setosa      -1.587834        0.955
+#> 10            1    10       -0.7539212  setosa      -1.587834        0.955
 #> # ... with 959,990 more rows
 
 posterior_preds$.posterior_value <- unscale(
@@ -192,6 +194,54 @@ ggplot(iris) +
 ```
 
 ![](fig/README-95-percent-intervals-1.png)
+
+### Refit RStanARM models with classical counterparts
+
+There are some quick functions for refitting RStanARM models using classical versions. These functions basically inject the values of `model$formula` and `model$data` into `lm()` or `glm()`. (Seriously, see the call sections in the two outputs below.) Therefore, don't use these functions for serious comparisons of classical versus Bayesian models.
+
+Refit with a linear model:
+
+``` r
+arm::display(stan_to_lm(model))
+#> Please manually fit model if original model used any 
+#> arguments besides `formula` and `data`.
+#> stats::lm(formula = stats::formula(model), data = model$data, 
+#>     weights = if (length(model$weights) == 0) NULL else model$weights, 
+#>     offset = model$offset)
+#>                                  coef.est coef.se
+#> (Intercept)                       0.33     0.80  
+#> z.Petal.Length                    1.03     0.61  
+#> Speciesversicolor                -0.72     0.81  
+#> Speciesvirginica                 -1.59     0.83  
+#> z.Petal.Length:Speciesversicolor  0.74     0.65  
+#> z.Petal.Length:Speciesvirginica   1.10     0.64  
+#> ---
+#> n = 145, k = 6
+#> residual sd = 0.41, R-Squared = 0.84
+```
+
+Refit with a generalized linear model:
+
+``` r
+arm::display(stan_to_glm(model))
+#> Please manually fit model if original model used any 
+#> arguments besides `formula`, `family`, and `data`.
+#> stats::glm(formula = stats::formula(model), family = model$family, 
+#>     data = model$data, weights = if (length(model$weights) == 
+#>         0) NULL else model$weights, offset = model$offset)
+#>                                  coef.est coef.se
+#> (Intercept)                       0.33     0.80  
+#> z.Petal.Length                    1.03     0.61  
+#> Speciesversicolor                -0.72     0.81  
+#> Speciesvirginica                 -1.59     0.83  
+#> z.Petal.Length:Speciesversicolor  0.74     0.65  
+#> z.Petal.Length:Speciesvirginica   1.10     0.64  
+#> ---
+#>   n = 145, k = 6
+#>   residual deviance = 23.3, null deviance = 142.0 (difference = 118.7)
+#>   overdispersion parameter = 0.2
+#>   residual sd is sqrt(overdispersion) = 0.41
+```
 
 ### ggmc support
 
