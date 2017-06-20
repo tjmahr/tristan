@@ -257,38 +257,63 @@ df_r2 <- data_frame(
 df_r2
 ```
 
-Now, we can compare the difference between highest-posterior intervals and
-equal-tailed intervals.
+### Interval calculation
+
+Two more helper functions compute tidy data-frames of posterior density 
+intervals. `tidy_hpdi()` provides the highest-density posterior interval for 
+model parameters, while `tidy_etdi()` computes the equal-tailed density
+intervals (the typical sort of intervals used for uncertain intervals.)
 
 ```{r}
-get_interval_edges <- function(prob) {
-  tail <- (1 - prob) / 2
-  c(tail, 1 - tail)
-}
-
-hpd <- coda::HPDinterval(coda::as.mcmc(df_r2$R2), prob = 0.95)
-ci95 <- quantile(df_r2$R2, get_interval_edges(.95))
-
-# Different widths
-max(hpd) - min(hpd)
-max(ci95) - min(ci95)
+tidy_hpdi(model)
+tidy_etdi(model)
 ```
 
-And we can plot the distribution of the _R_<sup>2</sup> values.
+The functions also work on single vectors of numbers, for quick one-off
+calculations.
+
+```{r}
+r2_intervals <- bind_rows(
+  tidy_hpdi(calculate_model_r2(model)),
+  tidy_etdi(calculate_model_r2(model))
+)
+r2_intervals
+```
+
+We can compare the difference between highest-posterior density intervals and
+equal-tailed intervals.
 
 ```{r r2-histogram, fig.width=6, fig.height=4}
-cis <- data_frame(
-  Method = c("HPD", "HPD", "Equal Tail", "Equal Tail"),
-  Value = c(as.vector(hpd), ci95))
-
-
 ggplot(df_r2) + 
   aes(x = R2) + 
   geom_histogram() + 
-  geom_vline(aes(xintercept = Value, color = Method), 
-             data = cis, size = 1, linetype = "dashed") + 
-  labs(color = "95% interval",
+  geom_vline(aes(xintercept = lower, color = interval), 
+             data = r2_intervals, size = 1, linetype = "dashed") + 
+  geom_vline(aes(xintercept = upper, color = interval), 
+             data = r2_intervals, size = 1, linetype = "dashed") +
+  labs(color = "90% interval",
        x = expression(R^2),
        y = "Num. posterior samples")
 ```
+
+
+## Pure sugar
+
+`double_etdi()` that provides all the values needed to make a double
+interval (caterpillar) plot.
+
+```{r double-interval}
+df1 <- double_etdi(calculate_model_r2(model), .95, .90)
+df2 <- double_etdi(model, .95, .90)
+df <- bind_rows(df1, df2)
+df
+
+ggplot(df) + 
+  aes(x = estimate, y = term, yend = term) + 
+  geom_vline(color = "white", size = 2, xintercept = 0) + 
+  geom_segment(aes(x = outer_lower, xend = outer_upper)) + 
+  geom_segment(aes(x = inner_lower, xend = inner_upper), size = 2) + 
+  geom_point(size = 4)
+```
+
 

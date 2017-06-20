@@ -4,7 +4,7 @@
 \name{tristan}
 \alias{tristan}
 \alias{tristan-package}
-\title{Tristan's helper functions for Stan samples}
+\title{Tristan's helper functions for RStanARM models and MCMC samples}
 \description{
-Tristan's helper functions for Stan samples
+Tristan's helper functions for RStanARM models and MCMC samples
 }

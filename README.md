@@ -60,12 +60,12 @@ print(model)
 #> 
 #> Estimates:
 #>                                  Median MAD_SD
-#> (Intercept)                       0.0    0.7  
+#> (Intercept)                       0.0    0.6  
 #> z.Petal.Length                    0.8    0.5  
-#> Speciesversicolor                -0.4    0.7  
-#> Speciesvirginica                 -1.2    0.7  
-#> z.Petal.Length:Speciesversicolor  1.0    0.6  
-#> z.Petal.Length:Speciesvirginica   1.4    0.6  
+#> Speciesversicolor                -0.4    0.6  
+#> Speciesvirginica                 -1.3    0.7  
+#> z.Petal.Length:Speciesversicolor  1.0    0.5  
+#> z.Petal.Length:Speciesvirginica   1.3    0.5  
 #> sigma                             0.4    0.0  
 #> 
 #> Sample avg. posterior predictive 
@@ -94,19 +94,19 @@ linear_preds <- augment_posterior_linpred(
   newdata = iris, 
   nsamples = 100)
 linear_preds
-#> # A tibble: 14,500 × 10
+#> # A tibble: 14,500 x 10
 #>    .observation .draw .posterior_value Sepal.Length Sepal.Width
 #>           <int> <int>            <dbl>        <dbl>       <dbl>
-#> 1             1     1       -1.0599905          5.1         3.5
-#> 2             1     2       -1.0113985          5.1         3.5
-#> 3             1     3       -1.0057100          5.1         3.5
-#> 4             1     4       -1.1183339          5.1         3.5
-#> 5             1     5       -1.0699625          5.1         3.5
-#> 6             1     6       -0.9554345          5.1         3.5
-#> 7             1     7       -1.1348548          5.1         3.5
-#> 8             1     8       -1.0669204          5.1         3.5
-#> 9             1     9       -0.9974893          5.1         3.5
-#> 10            1    10       -1.0709174          5.1         3.5
+#>  1            1     1       -1.0003247          5.1         3.5
+#>  2            1     2       -0.9800408          5.1         3.5
+#>  3            1     3       -1.0782613          5.1         3.5
+#>  4            1     4       -1.1555150          5.1         3.5
+#>  5            1     5       -1.0990496          5.1         3.5
+#>  6            1     6       -0.9977267          5.1         3.5
+#>  7            1     7       -1.1127216          5.1         3.5
+#>  8            1     8       -0.9554037          5.1         3.5
+#>  9            1     9       -1.0018127          5.1         3.5
+#> 10            1    10       -1.0210712          5.1         3.5
 #> # ... with 14,490 more rows, and 5 more variables: Petal.Length <dbl>,
 #> #   Petal.Width <dbl>, Species <fctr>, z.Sepal.Length <dbl>,
 #> #   z.Petal.Length <dbl>
@@ -159,19 +159,19 @@ newdata$Petal.Length <- unscale(newdata$z.Petal.Length, iris$Petal.Length)
 # Get posterior predictions
 posterior_preds <- augment_posterior_predict(model, newdata)
 posterior_preds
-#> # A tibble: 960,000 × 6
+#> # A tibble: 960,000 x 6
 #>    .observation .draw .posterior_value Species z.Petal.Length Petal.Length
 #>           <int> <int>            <dbl>  <fctr>          <dbl>        <dbl>
-#> 1             1     1        -1.129239  setosa      -1.587834        0.955
-#> 2             1     2        -1.999570  setosa      -1.587834        0.955
-#> 3             1     3        -2.066203  setosa      -1.587834        0.955
-#> 4             1     4        -1.838178  setosa      -1.587834        0.955
-#> 5             1     5        -1.418832  setosa      -1.587834        0.955
-#> 6             1     6        -1.082069  setosa      -1.587834        0.955
-#> 7             1     7        -1.278863  setosa      -1.587834        0.955
-#> 8             1     8        -1.160216  setosa      -1.587834        0.955
-#> 9             1     9        -1.920334  setosa      -1.587834        0.955
-#> 10            1    10        -1.290785  setosa      -1.587834        0.955
+#>  1            1     1       -1.5160539  setosa      -1.587834        0.955
+#>  2            1     2       -1.1513862  setosa      -1.587834        0.955
+#>  3            1     3       -1.2457199  setosa      -1.587834        0.955
+#>  4            1     4       -1.9700178  setosa      -1.587834        0.955
+#>  5            1     5       -1.4067362  setosa      -1.587834        0.955
+#>  6            1     6       -1.3449140  setosa      -1.587834        0.955
+#>  7            1     7       -1.2115145  setosa      -1.587834        0.955
+#>  8            1     8       -0.8762633  setosa      -1.587834        0.955
+#>  9            1     9       -1.5883634  setosa      -1.587834        0.955
+#> 10            1    10       -1.3116756  setosa      -1.587834        0.955
 #> # ... with 959,990 more rows
 
 posterior_preds$.posterior_value <- unscale(
@@ -290,57 +290,114 @@ df_r2 <- data_frame(
   R2 = calculate_model_r2(model)
 )
 df_r2
-#> # A tibble: 4,000 × 1
+#> # A tibble: 4,000 x 1
 #>           R2
 #>        <dbl>
-#> 1  0.8310305
-#> 2  0.8301309
-#> 3  0.8237946
-#> 4  0.8289572
-#> 5  0.8310537
-#> 6  0.8207312
-#> 7  0.8262780
-#> 8  0.8259409
-#> 9  0.8312654
-#> 10 0.8322098
+#>  1 0.8269203
+#>  2 0.8260345
+#>  3 0.8221425
+#>  4 0.8270270
+#>  5 0.8185265
+#>  6 0.8261973
+#>  7 0.8279846
+#>  8 0.8254305
+#>  9 0.8270019
+#> 10 0.8320477
 #> # ... with 3,990 more rows
 ```
 
-Now, we can compare the difference between highest-posterior intervals and equal-tailed intervals.
+### Interval calculation
+
+Two more helper functions compute tidy data-frames of posterior density intervals. `tidy_hpdi()` provides the highest-density posterior interval for model parameters, while `tidy_etdi()` computes the equal-tailed density intervals (the typical sort of intervals used for uncertain intervals.)
 
 ``` r
-get_interval_edges <- function(prob) {
-  tail <- (1 - prob) / 2
-  c(tail, 1 - tail)
-}
-
-hpd <- coda::HPDinterval(coda::as.mcmc(df_r2$R2), prob = 0.95)
-ci95 <- quantile(df_r2$R2, get_interval_edges(.95))
-
-# Different widths
-max(hpd) - min(hpd)
-#> [1] 0.01464609
-max(ci95) - min(ci95)
-#> [1] 0.01655731
+tidy_hpdi(model)
+#> # A tibble: 7 x 5
+#>                               term interval density       lower      upper
+#>                              <chr>    <chr>   <dbl>       <dbl>      <dbl>
+#> 1                      (Intercept)     HPDI     0.9 -0.96662031  1.1132883
+#> 2                   z.Petal.Length     HPDI     0.9  0.04365789  1.6235364
+#> 3                Speciesversicolor     HPDI     0.9 -1.43121311  0.6811740
+#> 4                 Speciesvirginica     HPDI     0.9 -2.32824507 -0.1798205
+#> 5 z.Petal.Length:Speciesversicolor     HPDI     0.9  0.14606964  1.8282612
+#> 6  z.Petal.Length:Speciesvirginica     HPDI     0.9  0.49959901  2.2286074
+#> 7                            sigma     HPDI     0.9  0.37047300  0.4492886
+tidy_etdi(model)
+#> # A tibble: 7 x 5
+#>                               term interval density       lower      upper
+#>                              <chr>    <chr>   <dbl>       <dbl>      <dbl>
+#> 1                      (Intercept)     ETDI     0.9 -1.04985921  1.0485166
+#> 2                   z.Petal.Length     ETDI     0.9 -0.03029808  1.5747382
+#> 3                Speciesversicolor     ETDI     0.9 -1.45587558  0.6632600
+#> 4                 Speciesvirginica     ETDI     0.9 -2.33831759 -0.1846349
+#> 5 z.Petal.Length:Speciesversicolor     ETDI     0.9  0.14595095  1.8280213
+#> 6  z.Petal.Length:Speciesvirginica     ETDI     0.9  0.47150891  2.2089550
+#> 7                            sigma     ETDI     0.9  0.37497544  0.4553001
 ```
 
-And we can plot the distribution of the *R*<sup>2</sup> values.
+The functions also work on single vectors of numbers, for quick one-off calculations.
 
 ``` r
-cis <- data_frame(
-  Method = c("HPD", "HPD", "Equal Tail", "Equal Tail"),
-  Value = c(as.vector(hpd), ci95))
+r2_intervals <- bind_rows(
+  tidy_hpdi(calculate_model_r2(model)),
+  tidy_etdi(calculate_model_r2(model))
+)
+r2_intervals
+#> # A tibble: 2 x 5
+#>                        term interval density     lower     upper
+#>                       <chr>    <chr>   <dbl>     <dbl>     <dbl>
+#> 1 calculate_model_r2(model)     HPDI     0.9 0.8231292 0.8348043
+#> 2 calculate_model_r2(model)     ETDI     0.9 0.8208520 0.8339865
+```
 
+We can compare the difference between highest-posterior density intervals and equal-tailed intervals.
 
+``` r
 ggplot(df_r2) + 
   aes(x = R2) + 
   geom_histogram() + 
-  geom_vline(aes(xintercept = Value, color = Method), 
-             data = cis, size = 1, linetype = "dashed") + 
-  labs(color = "95% interval",
+  geom_vline(aes(xintercept = lower, color = interval), 
+             data = r2_intervals, size = 1, linetype = "dashed") + 
+  geom_vline(aes(xintercept = upper, color = interval), 
+             data = r2_intervals, size = 1, linetype = "dashed") +
+  labs(color = "90% interval",
        x = expression(R^2),
        y = "Num. posterior samples")
 #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
 ![](fig/README-r2-histogram-1.png)
+
+Pure sugar
+----------
+
+`double_etdi()` that provides all the values needed to make a double interval (caterpillar) plot.
+
+``` r
+df1 <- double_etdi(calculate_model_r2(model), .95, .90)
+df2 <- double_etdi(model, .95, .90)
+df <- bind_rows(df1, df2)
+df
+#> # A tibble: 8 x 9
+#>                               term outer_lower inner_lower     estimate
+#>                              <chr>       <dbl>       <dbl>        <dbl>
+#> 1        calculate_model_r2(model)  0.81820677  0.82085205  0.829644851
+#> 2                      (Intercept) -1.25373326 -1.04985921  0.006368439
+#> 3                   z.Petal.Length -0.19771497 -0.03029808  0.776595364
+#> 4                Speciesversicolor -1.62467859 -1.45587558 -0.397443230
+#> 5                 Speciesvirginica -2.53694541 -2.33831759 -1.257934858
+#> 6 z.Petal.Length:Speciesversicolor -0.03191119  0.14595095  0.981728606
+#> 7  z.Petal.Length:Speciesvirginica  0.31518660  0.47150891  1.326612423
+#> 8                            sigma  0.36959972  0.37497544  0.411405525
+#> # ... with 5 more variables: inner_upper <dbl>, outer_upper <dbl>,
+#> #   est_type <chr>, inner_density <dbl>, outer_density <dbl>
+
+ggplot(df) + 
+  aes(x = estimate, y = term, yend = term) + 
+  geom_vline(color = "white", size = 2, xintercept = 0) + 
+  geom_segment(aes(x = outer_lower, xend = outer_upper)) + 
+  geom_segment(aes(x = inner_lower, xend = inner_upper), size = 2) + 
+  geom_point(size = 4)
+```
+
+![](fig/README-double-interval-1.png)

@@ -1,7 +1,17 @@
-#' Tristan's helper functions for Stan samples
+#' Tristan's helper functions for RStanARM models and MCMC samples
 #'
 #' @name tristan
 #' @docType package
+NULL
+
+#' Pipe operator
+#'
+#' @name %>%
+#' @rdname pipe
+#' @keywords internal
+#' @export
+#' @importFrom magrittr %>%
+#' @usage lhs \%>\% rhs
 NULL
 
 

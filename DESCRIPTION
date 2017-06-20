@@ -1,5 +1,5 @@
 Package: tristan
-Title: Tristan's helper functions for Stan samples
+Title: Tristan's helper functions for RStanARM models and MCMC samples
 Version: 0.0.0.9000
 Authors@R: person("TJ", "Mahr", email = "tristan.mahr@gmail.com", role = c("aut", "cre"))
 Description: This package provides from helper functions for preparing posterior samples from Stan models.
@@ -14,6 +14,8 @@ Imports: tibble,
     stats,
     rstanarm,
     ggmcmc,
-    dplyr
+    dplyr,
+    coda,
+    lazyeval
 Roxygen: list(markdown = TRUE)
 Suggests: testthat
