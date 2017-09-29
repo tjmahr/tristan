@@ -229,6 +229,7 @@ draw_ranef <- function(model, nsamples = NULL) {
 }
 
 draw_these_ranef <- function(model, rows) {
+  # code from here is adapted from rstanarm
   all_names <- model$stanfit@sim$fnames_oi
 
   re_names <- all_names %>% stringr::str_which("^b\\[")
@@ -245,6 +246,7 @@ draw_these_ranef <- function(model, rows) {
   nb <- nc * vapply(levs, length, 1L)
   nbseq <- rep.int(seq_along(nb), nb)
 
+  # code from here is my own
   group_vars <- split(nbseq, nbseq) %>%
     purrr::map2(names(fl), rep_along) %>%
     unname() %>%
@@ -274,7 +276,6 @@ draw_these_ranef <- function(model, rows) {
   dplyr::left_join(scheme, samples, by = ".parameter") %>%
     dplyr::select(dplyr::one_of(".draw", ".group_var", ".group", ".term",
                          ".parameter", ".posterior_value"))
-
 }
 
 str_omit <- function(string, pattern) {
