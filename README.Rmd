@@ -10,9 +10,11 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "fig/README-"
 )
+set.seed(09292017)
 ```
 
-# tristan [![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
+# tristan [![Project Status: WIP - Initial development is in progress, but 
+there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
 
 This package contains my helper functions for working with models fit with 
 RStanARM. The package is named tristan because I'm working with Stan samples and
@@ -245,9 +247,9 @@ ggs_caterpillar(gg_model2, line = 0) +
 ```
 
 
-### Calculate _R_<sup>2</sup>
+### Calculate (classical) _R_<sup>2</sup>
 
-`calculate_model_r2()` returns the unadjusted _R_<sup>2</sup> for each draw of
+`calculate_classical_r2()` returns the unadjusted _R_<sup>2</sup> for each draw of
 the posterior distribution.
 
 ```{r}
@@ -314,6 +316,84 @@ ggplot(df) +
   geom_segment(aes(x = outer_lower, xend = outer_upper)) + 
   geom_segment(aes(x = inner_lower, xend = inner_upper), size = 2) + 
   geom_point(size = 4)
+```
+
+
+
+## Predictions for mixed effects models
+
+This is such a finicky area that it will never 100% of the time but it works 
+well enough, especially if the new observations are subsets of the original 
+dataset.
+
+```{r, results = 'hide'}
+cbpp <- lme4::cbpp
+m2 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ period + (1 | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(4, 1, 1), 
+  prior = normal(0, 1))
+```
+
+Add a new herd to the data.
+
+```{r}
+# Add a new herd
+newdata <- cbpp %>% 
+  tibble::add_row(herd = "16", incidence = 0, size = 20, period = 1) %>% 
+  tibble::add_row(herd = "16", incidence = 0, size = 20, period = 2) %>% 
+  tibble::add_row(herd = "16", incidence = 0, size = 20, period = 3) %>% 
+  tibble::add_row(herd = "16", incidence = 0, size = 20, period = NA)
+
+d <- augment_posterior_predict(m2, newdata) %>% 
+  dplyr::filter(herd == "16")
+d
+```
+
+Plot the predictions.
+
+```{r mixed-pred, fig.width=3, fig.height=2}
+ggplot(d, aes(x = interaction(herd, period), y = .posterior_value / size)) + 
+  stat_summary(fun.data = median_hilow) + 
+  theme_grey(base_size = 8)
+```
+
+## Samples for mixed effects models
+
+`coef`, `fixef()` and `ranef()` only give the point estimates for model effects.
+`draw_coef()`, `draw_fixef()` and `draw_ranef()` will sample them from the
+posterior distribution.
+
+```{r}
+ranef(m2)
+draw_ranef(m2, 100)
+
+fixef(m2)
+draw_fixef(m2, 100)
+
+coef(m2)
+draw_coef(m2, 100)
+draw_coef(m2, 100) %>% 
+  select(.draw, .group_var, .group, .fixef_parameter, .total) %>% 
+  tidyr::spread(.fixef_parameter, .total)
+```
+
+We can visually confirm that `coef()` uses the posterior median values.
+
+```{r test-coef}
+all_coefs <- draw_coef(m2)
+
+medians <- coef(m2) %>% 
+  lapply(tibble::rownames_to_column, ".group") %>% 
+  bind_rows(.id = ".group_var") %>% 
+  tidyr::gather(.term, .posterior_median, -.group_var, -.group)
+  
+
+ggplot(all_coefs) + 
+  aes(x = interaction(.group_var, .group), y = .total) + 
+  stat_summary(fun.data = median_hilow) +
+  facet_wrap(".term") + 
+  geom_point(aes(y = .posterior_median), data = medians, color = "red")
 ```
 
 
