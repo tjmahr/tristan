@@ -45,10 +45,13 @@ to augmenting a data-set with model predictions.
 `stan_to_lm()` and `stan_to_glm()` provide a quick way to refit an RStanARM 
 model with its classical counterpart.
 
-The `ggs()` function in the ggmcmc package produces a tidy dataframe of MCMC
-samples. That function doesn't return the original parameter names for RStanARM
-models. `ggs_rstanarm()` rectifies this problem.
+`tidy_etdi()`, `tidy_hdpi()`, `tidy_median()` and `double_etdi()` provide 
+helpers for interval calclulation.
 
+`draw_coef()`, `draw_fixef()`, `draw_ranef()` and `draw_var_corr()` work like
+the `coef()`, `fixef()`, `ranef()`, and `VarCorr()` functions for rstanarm 
+mixed effects models, but they return a tidy dataframe of posterior samples
+instead of point estimates.
 
 ## Example
 
@@ -203,50 +206,6 @@ arm::display(glm( z.Sepal.Length ~ z.Petal.Length * Species,
 ```
 
 
-
-
-### ggmc support
-
-ggmc provides [a lot of 
-magic](http://xavier-fim.net/packages/ggmcmc/#importing-mcmc-samples-into-ggmcmc-using-ggs).
-The general ggmcmc workflow is to create a tidy dataframe using `ggs()` and plug
-it that into the package's plotting functions. For example, here is how we can
-inspect the each parameter value using histograms and interval plots.
-
-```{r ggmc-no-name, fig.width=4, fig.height=4, fig.show = "hold"}
-library(ggmcmc)
-gg_model <- ggs(model)
-  
-# Facet wrap so that values are in a grid, not a single column.
-ggs_histogram(gg_model) + 
-  facet_wrap("Parameter", scales = "free_x")
-
-# Remap y-aesthetic so that the parameters read from top-to-bottom in their
-# original factor ordering.
-ggs_caterpillar(gg_model, line = 0) + 
-  aes(y = forcats::fct_rev(Parameter)) + 
-  ylab(NULL)
-```
-
-The package is magically convenient. But look, the plot lost the names of
-parameters from the model!
-
-`ggs_rstanarm()` is a small function that imitates the output of `ggs()` but
-tries to keep the original parameter names. It also drops the non-parameter
-`"mean_PPD"` (the model's prediction for a completely average observation.)
-
-```{r ggmc-yes-name, fig.width=4, fig.height=4, fig.show = "hold"}
-gg_model2 <- ggs_rstanarm(model)
-
-ggs_histogram(gg_model2) + 
-  facet_wrap("Parameter", scales = "free_x")
-
-ggs_caterpillar(gg_model2, line = 0) + 
-  aes(y = forcats::fct_rev(Parameter)) + 
-  ylab(NULL)
-```
-
-
 ### Calculate (classical) _R_<sup>2</sup>
 
 `calculate_classical_r2()` returns the unadjusted _R_<sup>2</sup> for each draw of
@@ -388,7 +347,6 @@ medians <- coef(m2) %>%
   bind_rows(.id = ".group_var") %>% 
   tidyr::gather(.term, .posterior_median, -.group_var, -.group)
   
-
 ggplot(all_coefs) + 
   aes(x = interaction(.group_var, .group), y = .total) + 
   stat_summary(fun.data = median_hilow) +
@@ -400,33 +358,43 @@ ggplot(all_coefs) +
 distribution of correlation terms using different settings for `decov()` prior.
 
 ```{r, results = 'hide'}
+sleep <- lme4::sleepstudy
+
+m0 <- stan_glmer(
+  Reaction ~ Days + (Days | Subject),
+  data = sleep,
+  prior_covariance = decov(.25, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+
 m1 <- stan_glmer(
-  cbind(incidence, size - incidence) ~ 1 + (period | herd),
-  data = cbpp, family = binomial,
+  Reaction ~ Days + (Days | Subject),
+  data = sleep,
   prior_covariance = decov(1, 1, 1), 
   prior = normal(0, 1),
   prior_PD = TRUE,
   chains = 1)
 
 m2 <- stan_glmer(
-  cbind(incidence, size - incidence) ~ 1 + (period | herd),
-  data = cbpp, family = binomial,
+  Reaction ~ Days + (Days | Subject),
+  data = sleep,
   prior_covariance = decov(2, 1, 1), 
   prior = normal(0, 1),
   prior_PD = TRUE,
   chains = 1)
 
 m3 <- stan_glmer(
-  cbind(incidence, size - incidence) ~ 1 + (period | herd),
-  data = cbpp, family = binomial,
+  Reaction ~ Days + (Days | Subject),
+  data = sleep,
   prior_covariance = decov(4, 1, 1), 
   prior = normal(0, 1),
   prior_PD = TRUE,
   chains = 1)
 
 m4 <- stan_glmer(
-  cbind(incidence, size - incidence) ~ 1 + (period | herd),
-  data = cbpp, family = binomial,
+  Reaction ~ Days + (Days | Subject),
+  data = sleep,
   prior_covariance = decov(8, 1, 1), 
   prior = normal(0, 1),
   prior_PD = TRUE,
@@ -445,6 +413,7 @@ as.data.frame(VarCorr(m3))
 In this function we compute the sd-cor matrix for each posterior sample.
 
 ```{r var-corrr}
+vcs0 <- draw_var_corr(m0)
 vcs1 <- draw_var_corr(m1)
 vcs2 <- draw_var_corr(m2)
 vcs3 <- draw_var_corr(m3)
@@ -457,6 +426,7 @@ Filter to just the correlations.
 
 ```{r var-corr}
 cors <- bind_rows(
+  vcs0 %>% mutate(model = "decov(.25, 1, 1)"),
   vcs1 %>% mutate(model = "decov(1, 1, 1)"),
   vcs2 %>% mutate(model = "decov(2, 1, 1)"),
   vcs3 %>% mutate(model = "decov(4, 1, 1)"),
@@ -478,5 +448,9 @@ ggplot(cors) +
   labs(x = NULL, y = "correlation", color = "prior") + 
   ggtitle("Degrees of regularization with LKJ prior")
 
+ggplot(cors) + 
+  aes(x = sdcor, color = model) + 
+  stat_density(geom = "line", adjust = .2) + 
+  facet_wrap(".parameter")
 ```
 
