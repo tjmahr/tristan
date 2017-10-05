@@ -503,16 +503,16 @@ draw_fixef(m2, 100)
 #> # A tibble: 400 x 3
 #>    .draw  .parameter .posterior_value
 #>    <int>       <chr>            <dbl>
-#>  1     1 (Intercept)        -1.624254
-#>  2     2 (Intercept)        -1.254563
-#>  3     3 (Intercept)        -1.668833
-#>  4     4 (Intercept)        -1.378683
-#>  5     5 (Intercept)        -1.548028
-#>  6     6 (Intercept)        -1.674719
-#>  7     7 (Intercept)        -1.543202
-#>  8     8 (Intercept)        -1.698083
-#>  9     9 (Intercept)        -1.371962
-#> 10    10 (Intercept)        -1.217996
+#>  1     1 (Intercept)        -1.369444
+#>  2     2 (Intercept)        -1.535243
+#>  3     3 (Intercept)        -1.209551
+#>  4     4 (Intercept)        -1.488341
+#>  5     5 (Intercept)        -1.269371
+#>  6     6 (Intercept)        -1.145897
+#>  7     7 (Intercept)        -1.871921
+#>  8     8 (Intercept)        -1.051208
+#>  9     9 (Intercept)        -1.250272
+#> 10    10 (Intercept)        -1.368299
 #> # ... with 390 more rows
 
 coef(m2)
@@ -556,18 +556,18 @@ draw_coef(m2, 100) %>%
   select(.draw, .group_var, .group, .fixef_parameter, .total) %>% 
   tidyr::spread(.fixef_parameter, .total)
 #> # A tibble: 1,500 x 7
-#>    .draw .group_var .group `(Intercept)`    period2    period3   period4
-#>  * <int>      <chr>  <chr>         <dbl>      <dbl>      <dbl>     <dbl>
-#>  1     1       herd      1    -0.6561107 -0.8480135 -0.7786625 -1.148586
-#>  2     1       herd     10    -1.8229739 -0.8480135 -0.7786625 -1.148586
-#>  3     1       herd     11    -1.3550626 -0.8480135 -0.7786625 -1.148586
-#>  4     1       herd     12    -1.4348499 -0.8480135 -0.7786625 -1.148586
-#>  5     1       herd     13    -1.6945617 -0.8480135 -0.7786625 -1.148586
-#>  6     1       herd     14    -1.2463761 -0.8480135 -0.7786625 -1.148586
-#>  7     1       herd     15    -2.1541377 -0.8480135 -0.7786625 -1.148586
-#>  8     1       herd      2    -1.4012674 -0.8480135 -0.7786625 -1.148586
-#>  9     1       herd      3    -0.9395158 -0.8480135 -0.7786625 -1.148586
-#> 10     1       herd      4    -1.7607356 -0.8480135 -0.7786625 -1.148586
+#>    .draw .group_var .group `(Intercept)`    period2    period3    period4
+#>  * <int>      <chr>  <chr>         <dbl>      <dbl>      <dbl>      <dbl>
+#>  1     1       herd      1    -1.6614772 -0.8450444 -0.8612593 -0.9988943
+#>  2     1       herd     10    -2.1102399 -0.8450444 -0.8612593 -0.9988943
+#>  3     1       herd     11    -1.2134057 -0.8450444 -0.8612593 -0.9988943
+#>  4     1       herd     12    -0.8685274 -0.8450444 -0.8612593 -0.9988943
+#>  5     1       herd     13    -2.2248655 -0.8450444 -0.8612593 -0.9988943
+#>  6     1       herd     14    -0.4510703 -0.8450444 -0.8612593 -0.9988943
+#>  7     1       herd     15    -2.4719634 -0.8450444 -0.8612593 -0.9988943
+#>  8     1       herd      2    -1.5590489 -0.8450444 -0.8612593 -0.9988943
+#>  9     1       herd      3    -0.5611966 -0.8450444 -0.8612593 -0.9988943
+#> 10     1       herd      4    -1.6242694 -0.8450444 -0.8612593 -0.9988943
 #> # ... with 1,490 more rows
 ```
 
@@ -590,3 +590,125 @@ ggplot(all_coefs) +
 ```
 
 ![](fig/README-test-coef-1.png)
+
+`draw_var_corr()` provides an analogue to `VarCorr()`. Let's compare the prior distribution of correlation terms using different settings for `decov()` prior.
+
+``` r
+m1 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(1, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+#> trying deprecated constructor; please alert package maintainer
+
+m2 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(2, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+#> trying deprecated constructor; please alert package maintainer
+
+m3 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(4, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+#> trying deprecated constructor; please alert package maintainer
+
+m4 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(8, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+#> trying deprecated constructor; please alert package maintainer
+```
+
+`VarCorr()` returns the mean variance-covariance/standard-deviation-correlation values.
+
+``` r
+VarCorr(m3)
+#>  Groups Name        Std.Dev. Corr                
+#>  herd   (Intercept) 1.4483                       
+#>         period2     1.4625    0.030              
+#>         period3     1.5467   -0.018 -0.027       
+#>         period4     1.5037    0.007 -0.050  0.030
+
+as.data.frame(VarCorr(m3))
+#>     grp        var1    var2        vcov        sdcor
+#> 1  herd (Intercept)    <NA>  2.09770499  1.448345606
+#> 2  herd     period2    <NA>  2.13897801  1.462524533
+#> 3  herd     period3    <NA>  2.39213201  1.546651872
+#> 4  herd     period4    <NA>  2.26109902  1.503695122
+#> 5  herd (Intercept) period2  0.06436293  0.030385082
+#> 6  herd (Intercept) period3 -0.04044627 -0.018055672
+#> 7  herd (Intercept) period4  0.01588953  0.007295903
+#> 8  herd     period2 period3 -0.06202073 -0.027418340
+#> 9  herd     period2 period4 -0.10914565 -0.049629908
+#> 10 herd     period3 period4  0.06916728  0.029740505
+```
+
+In this function we compute the sd-cor matrix for each posterior sample.
+
+``` r
+vcs1 <- draw_var_corr(m1)
+vcs2 <- draw_var_corr(m2)
+vcs3 <- draw_var_corr(m3)
+vcs4 <- draw_var_corr(m4)
+
+vcs3
+#> # A tibble: 10,000 x 7
+#>    .draw                          .parameter   grp        var1    var2
+#>    <int>                               <chr> <chr>       <chr>   <chr>
+#>  1   971 Sigma[herd:(Intercept),(Intercept)]  herd (Intercept)    <NA>
+#>  2   971         Sigma[herd:period2,period2]  herd     period2    <NA>
+#>  3   971         Sigma[herd:period3,period3]  herd     period3    <NA>
+#>  4   971         Sigma[herd:period4,period4]  herd     period4    <NA>
+#>  5   971     Sigma[herd:period2,(Intercept)]  herd (Intercept) period2
+#>  6   971     Sigma[herd:period3,(Intercept)]  herd (Intercept) period3
+#>  7   971     Sigma[herd:period4,(Intercept)]  herd (Intercept) period4
+#>  8   971         Sigma[herd:period3,period2]  herd     period2 period3
+#>  9   971         Sigma[herd:period4,period2]  herd     period2 period4
+#> 10   971         Sigma[herd:period4,period3]  herd     period3 period4
+#> # ... with 9,990 more rows, and 2 more variables: vcov <dbl>, sdcor <dbl>
+```
+
+Filter to just the correlations.
+
+``` r
+cors <- bind_rows(
+  vcs1 %>% mutate(model = "decov(1, 1, 1)"),
+  vcs2 %>% mutate(model = "decov(2, 1, 1)"),
+  vcs3 %>% mutate(model = "decov(4, 1, 1)"),
+  vcs4 %>% mutate(model = "decov(8, 1, 1)")) %>% 
+  filter(!is.na(var2))
+
+ggplot(cors) + 
+  aes(y = sdcor, x = .parameter, color = model) + 
+  stat_summary(fun.data = median_hilow, geom = "linerange", 
+               fun.args = list(conf.int = .9), 
+               position = position_dodge(-.8)) + 
+  stat_summary(fun.data = median_hilow, size = 1.5, geom = "linerange", 
+               fun.args = list(conf.int = .7), show.legend = FALSE,
+               position = position_dodge(-.8)) + 
+  stat_summary(fun.data = median_hilow, size = 2.5, geom = "linerange", 
+               fun.args = list(conf.int = .5), show.legend = FALSE,
+               position = position_dodge(-.8)) + 
+  coord_flip() + 
+  labs(x = NULL, y = "correlation", color = "prior") + 
+  ggtitle("Degrees of regularization with LKJ prior")
+#> Warning: position_dodge requires non-overlapping x intervals
+
+#> Warning: position_dodge requires non-overlapping x intervals
+
+#> Warning: position_dodge requires non-overlapping x intervals
+```
+
+![](fig/README-var-corr-1.png)

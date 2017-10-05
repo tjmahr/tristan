@@ -1,6 +1,7 @@
 #' Tristan's helper functions for RStanARM models and MCMC samples
 #'
 #' @name tristan
+#' @import rlang
 #' @docType package
 NULL
 
@@ -202,120 +203,5 @@ naive_augment_posterior_predict <- function(model, newdata, ..., nsamples = NULL
   tibble::as.tibble(long_preds_w_data)
 }
 
-
-
-#' @import rlang
-#' @export
-draw_fixef <- function(model, nsamples = NULL) {
-  avail_draws <- attr(summary(model), "posterior_sample_size")
-  to_sample <- sample(seq_len(nsamples %||% avail_draws))
-  draw_these_fixef(model, to_sample)
-}
-
-draw_these_fixef <- function(model, rows) {
-  to_draw <- names(rstanarm::fixef(model))
-  draws <- as.data.frame(model, pars = to_draw)
-  draws[rows, , drop = FALSE] %>%
-    tibble::as_tibble() %>%
-    tibble::rowid_to_column(".draw") %>%
-    tidyr::gather(".parameter", ".posterior_value", -1)
-}
-
-#' @export
-draw_ranef <- function(model, nsamples = NULL) {
-  avail_draws <- attr(summary(model), "posterior_sample_size")
-  to_sample <- sample(seq_len(nsamples %||% avail_draws))
-  draw_these_ranef(model, to_sample)
-}
-
-draw_these_ranef <- function(model, rows) {
-  # code from here is adapted from rstanarm
-  all_names <- model$stanfit@sim$fnames_oi
-
-  re_names <- all_names %>% stringr::str_which("^b\\[")
-  re_names <- all_names[re_names] %>% str_omit("_NEW_")
-
-  draws <- as.data.frame(model, pars = re_names)
-  ans <- draws[rows, , drop = FALSE]
-
-  fl <- model$glmod$reTrms$flist
-  levs <- lapply(fl, levels)
-  cnms <- model$glmod$reTrms$cnms
-
-  nc <- vapply(cnms, length, 1L)
-  nb <- nc * vapply(levs, length, 1L)
-  nbseq <- rep.int(seq_along(nb), nb)
-
-  # code from here is my own
-  group_vars <- split(nbseq, nbseq) %>%
-    purrr::map2(names(fl), rep_along) %>%
-    unname() %>%
-    flatten_chr()
-
-  groups <- split(nbseq, nbseq) %>%
-    purrr::map2(levs, rep_each_along) %>%
-    unname() %>%
-    flatten_chr()
-
-  terms <- split(nbseq, nbseq) %>%
-    purrr::map2(cnms, rep_along) %>%
-    unname() %>%
-    flatten_chr()
-
-  scheme <- tibble::data_frame(
-    .group_var = group_vars,
-    .group = groups,
-    .term = terms,
-    .parameter = names(ans))
-
-  samples <- ans %>%
-    tibble::as_tibble() %>%
-    tibble::rowid_to_column(".draw") %>%
-    tidyr::gather(".parameter", ".posterior_value", -".draw")
-
-  dplyr::left_join(scheme, samples, by = ".parameter") %>%
-    dplyr::select(dplyr::one_of(".draw", ".group_var", ".group", ".term",
-                         ".parameter", ".posterior_value"))
-}
-
-str_omit <- function(string, pattern) {
-  string[Negate(stringr::str_detect)(string, pattern)]
-}
-
-rep_each_along <- function(x, y) {
-  each <- length(x) / length(y)
-  rep(y, each = each)
-}
-
-#' @export
-draw_coef <- function(model, nsamples = NULL) {
-  avail_draws <- attr(summary(model), "posterior_sample_size")
-  to_sample <- sample(seq_len(nsamples %||% avail_draws))
-
-  fef <- draw_these_fixef(model, to_sample) %>%
-    dplyr::rename(.term = .data$.parameter,
-                  .fixef_part = .data$.posterior_value) %>%
-    dplyr::mutate(.fixef_parameter = .data$.term)
-
-  ref <- draw_these_ranef(model, to_sample) %>%
-    dplyr::rename(
-      .ranef_part = .data$.posterior_value,
-      .ranef_parameter = .data$.parameter)
-
-  terms <- tidyr::crossing(
-    .draw  = ref$.draw,
-    tidyr::nesting(.group_var = ref$.group_var, .group = ref$.group),
-    .term = c(ref$.term, fef$.term)
-  )
-
-  terms %>%
-    dplyr::left_join(ref, by = c(".draw", ".group_var", ".group", ".term")) %>%
-    dplyr::left_join(fef, by = c(".draw", ".term")) %>%
-    tidyr::replace_na(list(.ranef_part = 0, .fixef_part = 0)) %>%
-    dplyr::mutate(.total = .data$.ranef_part + .data$.fixef_part) %>%
-    dplyr::select(dplyr::one_of(".draw", ".group_var", ".group", ".term",
-                                ".fixef_parameter", ".ranef_parameter",
-                                ".fixef_part", ".ranef_part", ".total"))
-}
 
 

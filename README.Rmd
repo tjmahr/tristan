@@ -396,4 +396,87 @@ ggplot(all_coefs) +
   geom_point(aes(y = .posterior_median), data = medians, color = "red")
 ```
 
+`draw_var_corr()` provides an analogue to `VarCorr()`. Let's compare the prior
+distribution of correlation terms using different settings for `decov()` prior.
+
+```{r, results = 'hide'}
+m1 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(1, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+
+m2 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(2, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+
+m3 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(4, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+
+m4 <- stan_glmer(
+  cbind(incidence, size - incidence) ~ 1 + (period | herd),
+  data = cbpp, family = binomial,
+  prior_covariance = decov(8, 1, 1), 
+  prior = normal(0, 1),
+  prior_PD = TRUE,
+  chains = 1)
+```
+
+`VarCorr()` returns the mean variance-covariance/standard-deviation-correlation
+values.
+
+```{r}
+VarCorr(m3)
+
+as.data.frame(VarCorr(m3))
+```
+
+In this function we compute the sd-cor matrix for each posterior sample.
+
+```{r var-corrr}
+vcs1 <- draw_var_corr(m1)
+vcs2 <- draw_var_corr(m2)
+vcs3 <- draw_var_corr(m3)
+vcs4 <- draw_var_corr(m4)
+
+vcs3
+```
+
+Filter to just the correlations.
+
+```{r var-corr}
+cors <- bind_rows(
+  vcs1 %>% mutate(model = "decov(1, 1, 1)"),
+  vcs2 %>% mutate(model = "decov(2, 1, 1)"),
+  vcs3 %>% mutate(model = "decov(4, 1, 1)"),
+  vcs4 %>% mutate(model = "decov(8, 1, 1)")) %>% 
+  filter(!is.na(var2))
+
+ggplot(cors) + 
+  aes(y = sdcor, x = .parameter, color = model) + 
+  stat_summary(fun.data = median_hilow, geom = "linerange", 
+               fun.args = list(conf.int = .9), 
+               position = position_dodge(-.8)) + 
+  stat_summary(fun.data = median_hilow, size = 1.5, geom = "linerange", 
+               fun.args = list(conf.int = .7), show.legend = FALSE,
+               position = position_dodge(-.8)) + 
+  stat_summary(fun.data = median_hilow, size = 2.5, geom = "linerange", 
+               fun.args = list(conf.int = .5), show.legend = FALSE,
+               position = position_dodge(-.8)) + 
+  coord_flip() + 
+  labs(x = NULL, y = "correlation", color = "prior") + 
+  ggtitle("Degrees of regularization with LKJ prior")
+
+```
 
