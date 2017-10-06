@@ -35,7 +35,6 @@ Fit a simple linear model.
 
 ``` r
 library(tidyverse)
-#> Warning: package 'dplyr' was built under R version 3.4.2
 library(rstanarm)
 library(tristan)
 
@@ -63,11 +62,11 @@ print(model)
 #> 
 #> Estimates:
 #>                                  Median MAD_SD
-#> (Intercept)                       0.0    0.7  
+#> (Intercept)                       0.0    0.6  
 #> z.Petal.Length                    0.8    0.5  
 #> Speciesversicolor                -0.4    0.7  
 #> Speciesvirginica                 -1.3    0.7  
-#> z.Petal.Length:Speciesversicolor  1.0    0.6  
+#> z.Petal.Length:Speciesversicolor  1.0    0.5  
 #> z.Petal.Length:Speciesvirginica   1.3    0.6  
 #> sigma                             0.4    0.0  
 #> 
@@ -100,16 +99,16 @@ linear_preds
 #> # A tibble: 14,500 x 10
 #>    .observation .draw .posterior_value Sepal.Length Sepal.Width
 #>           <int> <int>            <dbl>        <dbl>       <dbl>
-#>  1            1     1       -0.9450143          5.1         3.5
-#>  2            1     2       -1.0788779          5.1         3.5
-#>  3            1     3       -1.0356139          5.1         3.5
-#>  4            1     4       -1.0491301          5.1         3.5
-#>  5            1     5       -0.9396638          5.1         3.5
-#>  6            1     6       -1.1621977          5.1         3.5
-#>  7            1     7       -1.0184043          5.1         3.5
-#>  8            1     8       -1.0316247          5.1         3.5
-#>  9            1     9       -1.0556448          5.1         3.5
-#> 10            1    10       -1.0218903          5.1         3.5
+#>  1            1     1       -0.9315514          5.1         3.5
+#>  2            1     2       -0.9565635          5.1         3.5
+#>  3            1     3       -0.8873909          5.1         3.5
+#>  4            1     4       -1.0384317          5.1         3.5
+#>  5            1     5       -1.0680745          5.1         3.5
+#>  6            1     6       -0.9813867          5.1         3.5
+#>  7            1     7       -1.0067503          5.1         3.5
+#>  8            1     8       -1.1124061          5.1         3.5
+#>  9            1     9       -1.0205787          5.1         3.5
+#> 10            1    10       -0.9786489          5.1         3.5
 #> # ... with 14,490 more rows, and 5 more variables: Petal.Length <dbl>,
 #> #   Petal.Width <dbl>, Species <fctr>, z.Sepal.Length <dbl>,
 #> #   z.Petal.Length <dbl>
@@ -165,16 +164,16 @@ posterior_preds
 #> # A tibble: 960,000 x 6
 #>    .observation .draw .posterior_value Species z.Petal.Length Petal.Length
 #>           <int> <int>            <dbl>  <fctr>          <dbl>        <dbl>
-#>  1            1     1       -1.2846158  setosa      -1.587834        0.955
-#>  2            1     2       -0.8286355  setosa      -1.587834        0.955
-#>  3            1     3       -1.9339924  setosa      -1.587834        0.955
-#>  4            1     4       -1.2500540  setosa      -1.587834        0.955
-#>  5            1     5       -1.5456511  setosa      -1.587834        0.955
-#>  6            1     6       -0.8536395  setosa      -1.587834        0.955
-#>  7            1     7       -0.9103809  setosa      -1.587834        0.955
-#>  8            1     8       -2.0104667  setosa      -1.587834        0.955
-#>  9            1     9       -1.6707626  setosa      -1.587834        0.955
-#> 10            1    10       -1.6492947  setosa      -1.587834        0.955
+#>  1            1     1       -1.3809285  setosa      -1.587834        0.955
+#>  2            1     2       -1.0053184  setosa      -1.587834        0.955
+#>  3            1     3       -2.0321063  setosa      -1.587834        0.955
+#>  4            1     4       -1.1646054  setosa      -1.587834        0.955
+#>  5            1     5       -1.1044528  setosa      -1.587834        0.955
+#>  6            1     6       -0.9158609  setosa      -1.587834        0.955
+#>  7            1     7       -0.8546550  setosa      -1.587834        0.955
+#>  8            1     8       -1.6653748  setosa      -1.587834        0.955
+#>  9            1     9       -1.5790256  setosa      -1.587834        0.955
+#> 10            1    10       -1.5077607  setosa      -1.587834        0.955
 #> # ... with 959,990 more rows
 
 posterior_preds$.posterior_value <- unscale(
@@ -258,16 +257,16 @@ df_r2
 #> # A tibble: 4,000 x 1
 #>           R2
 #>        <dbl>
-#>  1 0.8328123
-#>  2 0.8317308
-#>  3 0.8328224
-#>  4 0.8294250
-#>  5 0.8312924
-#>  6 0.8272437
-#>  7 0.8233947
-#>  8 0.8322048
-#>  9 0.8312965
-#> 10 0.8218496
+#>  1 0.8269287
+#>  2 0.8286182
+#>  3 0.8309418
+#>  4 0.8337803
+#>  5 0.8316979
+#>  6 0.8295612
+#>  7 0.8325530
+#>  8 0.8318201
+#>  9 0.8276650
+#> 10 0.8280340
 #> # ... with 3,990 more rows
 ```
 
@@ -280,25 +279,24 @@ tidy_hpdi(model)
 #> # A tibble: 7 x 5
 #>                               term interval density       lower      upper
 #>                              <chr>    <chr>   <dbl>       <dbl>      <dbl>
-#> 1                      (Intercept)     HPDI     0.9 -0.96780513  1.2744215
-#> 2                   z.Petal.Length     HPDI     0.9 -0.02275323  1.7009889
-#> 3                Speciesversicolor     HPDI     0.9 -1.58955554  0.6581076
-#> 4                 Speciesvirginica     HPDI     0.9 -2.46028962 -0.1653479
-#> 5 z.Petal.Length:Speciesversicolor     HPDI     0.9  0.04041798  1.9201696
-#> 6  z.Petal.Length:Speciesvirginica     HPDI     0.9  0.40728541  2.2280055
-#> 7                            sigma     HPDI     0.9  0.36923533  0.4517970
+#> 1                      (Intercept)     HPDI     0.9 -1.03894068  1.0757546
+#> 2                   z.Petal.Length     HPDI     0.9  0.03453807  1.6560589
+#> 3                Speciesversicolor     HPDI     0.9 -1.42748700  0.6884022
+#> 4                 Speciesvirginica     HPDI     0.9 -2.38524882 -0.2048360
+#> 5 z.Petal.Length:Speciesversicolor     HPDI     0.9  0.06651501  1.8544207
+#> 6  z.Petal.Length:Speciesvirginica     HPDI     0.9  0.46379409  2.2085139
+#> 7                            sigma     HPDI     0.9  0.37288522  0.4534112
 tidy_etdi(model)
 #> # A tibble: 7 x 5
-#>                               term interval density       lower
-#>                              <chr>    <chr>   <dbl>       <dbl>
-#> 1                      (Intercept)     ETDI     0.9 -1.11840092
-#> 2                   z.Petal.Length     ETDI     0.9 -0.09340855
-#> 3                Speciesversicolor     ETDI     0.9 -1.54307619
-#> 4                 Speciesvirginica     ETDI     0.9 -2.41659778
-#> 5 z.Petal.Length:Speciesversicolor     ETDI     0.9  0.02942054
-#> 6  z.Petal.Length:Speciesvirginica     ETDI     0.9  0.40763669
-#> 7                            sigma     ETDI     0.9  0.37389087
-#> # ... with 1 more variables: upper <dbl>
+#>                               term interval density       lower      upper
+#>                              <chr>    <chr>   <dbl>       <dbl>      <dbl>
+#> 1                      (Intercept)     ETDI     0.9 -1.01524062  1.1076903
+#> 2                   z.Petal.Length     ETDI     0.9 -0.01548979  1.6149531
+#> 3                Speciesversicolor     ETDI     0.9 -1.49737884  0.6347173
+#> 4                 Speciesvirginica     ETDI     0.9 -2.37986191 -0.1925737
+#> 5 z.Petal.Length:Speciesversicolor     ETDI     0.9  0.07317261  1.8652106
+#> 6  z.Petal.Length:Speciesvirginica     ETDI     0.9  0.44271242  2.1940697
+#> 7                            sigma     ETDI     0.9  0.37262531  0.4531580
 ```
 
 The functions also work on single vectors of numbers, for quick one-off calculations.
@@ -312,8 +310,8 @@ r2_intervals
 #> # A tibble: 2 x 5
 #>                        term interval density     lower     upper
 #>                       <chr>    <chr>   <dbl>     <dbl>     <dbl>
-#> 1 calculate_model_r2(model)     HPDI     0.9 0.8226714 0.8348560
-#> 2 calculate_model_r2(model)     ETDI     0.9 0.8203498 0.8340235
+#> 1 calculate_model_r2(model)     HPDI     0.9 0.8234095 0.8349006
+#> 2 calculate_model_r2(model)     ETDI     0.9 0.8211217 0.8338705
 ```
 
 We can compare the difference between highest-posterior density intervals and equal-tailed intervals.
@@ -345,16 +343,16 @@ df2 <- double_etdi(model, .95, .90)
 df <- bind_rows(df1, df2)
 df
 #> # A tibble: 8 x 9
-#>                               term outer_lower inner_lower    estimate
-#>                              <chr>       <dbl>       <dbl>       <dbl>
-#> 1        calculate_model_r2(model)   0.8180068  0.82034976  0.82963306
-#> 2                      (Intercept)  -1.3804081 -1.11840092  0.03694444
-#> 3                   z.Petal.Length  -0.2837505 -0.09340855  0.79797208
-#> 4                Speciesversicolor  -1.7564642 -1.54307619 -0.42134720
-#> 5                 Speciesvirginica  -2.6198936 -2.41659778 -1.27733443
-#> 6 z.Petal.Length:Speciesversicolor  -0.1378244  0.02942054  0.97221508
-#> 7  z.Petal.Length:Speciesvirginica   0.2497426  0.40763669  1.31514103
-#> 8                            sigma   0.3676592  0.37389087  0.41193255
+#>                               term outer_lower inner_lower     estimate
+#>                              <chr>       <dbl>       <dbl>        <dbl>
+#> 1        calculate_model_r2(model)   0.8189694  0.82112172  0.829535546
+#> 2                      (Intercept)  -1.2148612 -1.01524062  0.006074363
+#> 3                   z.Petal.Length  -0.1528441 -0.01548979  0.780169581
+#> 4                Speciesversicolor  -1.6635555 -1.49737884 -0.395108335
+#> 5                 Speciesvirginica  -2.5544321 -2.37986191 -1.256114326
+#> 6 z.Petal.Length:Speciesversicolor  -0.0711872  0.07317261  0.974786719
+#> 7  z.Petal.Length:Speciesvirginica   0.2931280  0.44271242  1.323619152
+#> 8                            sigma   0.3660297  0.37262531  0.410974065
 #> # ... with 5 more variables: inner_upper <dbl>, outer_upper <dbl>,
 #> #   est_type <chr>, inner_density <dbl>, outer_density <dbl>
 
@@ -399,16 +397,16 @@ d
 #> # A tibble: 12,000 x 7
 #>    .observation .draw .posterior_value   herd incidence  size period
 #>           <int> <int>            <int> <fctr>     <dbl> <dbl> <fctr>
-#>  1           57     1                8     16         0    20      1
-#>  2           57     2                4     16         0    20      1
-#>  3           57     3                5     16         0    20      1
-#>  4           57     4                7     16         0    20      1
+#>  1           57     1                4     16         0    20      1
+#>  2           57     2                3     16         0    20      1
+#>  3           57     3                3     16         0    20      1
+#>  4           57     4                2     16         0    20      1
 #>  5           57     5                6     16         0    20      1
-#>  6           57     6                3     16         0    20      1
-#>  7           57     7                3     16         0    20      1
-#>  8           57     8                6     16         0    20      1
-#>  9           57     9                6     16         0    20      1
-#> 10           57    10                5     16         0    20      1
+#>  6           57     6                6     16         0    20      1
+#>  7           57     7                2     16         0    20      1
+#>  8           57     8                5     16         0    20      1
+#>  9           57     9                9     16         0    20      1
+#> 10           57    10                3     16         0    20      1
 #> # ... with 11,990 more rows
 ```
 
@@ -431,21 +429,21 @@ Samples for mixed effects models
 ranef(m2)
 #> $herd
 #>     (Intercept)
-#> 1   0.585726541
-#> 2  -0.315578819
-#> 3   0.386807105
-#> 4   0.002520164
-#> 5  -0.231718913
-#> 6  -0.445537342
-#> 7   0.894365123
-#> 8   0.668274806
-#> 9  -0.281648583
-#> 10 -0.588745893
-#> 11 -0.119874277
-#> 12 -0.083545977
-#> 13 -0.768323937
-#> 14  1.031629112
-#> 15 -0.591667479
+#> 1   0.585052547
+#> 2  -0.307232667
+#> 3   0.398094621
+#> 4   0.007847365
+#> 5  -0.218798043
+#> 6  -0.459476477
+#> 7   0.907308051
+#> 8   0.670980547
+#> 9  -0.289507045
+#> 10 -0.586808540
+#> 11 -0.124260855
+#> 12 -0.075497166
+#> 13 -0.764195670
+#> 14  1.039507689
+#> 15 -0.589869444
 draw_ranef(m2, 100)
 #> # A tibble: 1,500 x 6
 #>    .draw .group_var .group       .term            .parameter
@@ -464,41 +462,41 @@ draw_ranef(m2, 100)
 
 fixef(m2)
 #> (Intercept)     period2     period3     period4 
-#>  -1.4884613  -0.8502120  -0.9655542  -1.3250250
+#>  -1.4923155  -0.8623434  -0.9683822  -1.3216858
 draw_fixef(m2, 100)
 #> # A tibble: 400 x 3
 #>    .draw  .parameter .posterior_value
 #>    <int>       <chr>            <dbl>
-#>  1     1 (Intercept)       -1.2968494
-#>  2     2 (Intercept)       -1.5348199
-#>  3     3 (Intercept)       -1.1787171
-#>  4     4 (Intercept)       -1.4681809
-#>  5     5 (Intercept)       -1.4974331
-#>  6     6 (Intercept)       -0.8424193
-#>  7     7 (Intercept)       -1.4127342
-#>  8     8 (Intercept)       -1.5275066
-#>  9     9 (Intercept)       -1.5800322
-#> 10    10 (Intercept)       -1.1636854
+#>  1     1 (Intercept)        -1.369444
+#>  2     2 (Intercept)        -1.535243
+#>  3     3 (Intercept)        -1.209551
+#>  4     4 (Intercept)        -1.488341
+#>  5     5 (Intercept)        -1.269371
+#>  6     6 (Intercept)        -1.145897
+#>  7     7 (Intercept)        -1.871921
+#>  8     8 (Intercept)        -1.051208
+#>  9     9 (Intercept)        -1.250272
+#> 10    10 (Intercept)        -1.368299
 #> # ... with 390 more rows
 
 coef(m2)
 #> $herd
-#>    (Intercept)   period2    period3   period4
-#> 1   -0.9027348 -0.850212 -0.9655542 -1.325025
-#> 2   -1.8040401 -0.850212 -0.9655542 -1.325025
-#> 3   -1.1016542 -0.850212 -0.9655542 -1.325025
-#> 4   -1.4859411 -0.850212 -0.9655542 -1.325025
-#> 5   -1.7201802 -0.850212 -0.9655542 -1.325025
-#> 6   -1.9339986 -0.850212 -0.9655542 -1.325025
-#> 7   -0.5940962 -0.850212 -0.9655542 -1.325025
-#> 8   -0.8201865 -0.850212 -0.9655542 -1.325025
-#> 9   -1.7701099 -0.850212 -0.9655542 -1.325025
-#> 10  -2.0772072 -0.850212 -0.9655542 -1.325025
-#> 11  -1.6083356 -0.850212 -0.9655542 -1.325025
-#> 12  -1.5720073 -0.850212 -0.9655542 -1.325025
-#> 13  -2.2567852 -0.850212 -0.9655542 -1.325025
-#> 14  -0.4568322 -0.850212 -0.9655542 -1.325025
-#> 15  -2.0801288 -0.850212 -0.9655542 -1.325025
+#>    (Intercept)    period2    period3   period4
+#> 1   -0.9072630 -0.8623434 -0.9683822 -1.321686
+#> 2   -1.7995482 -0.8623434 -0.9683822 -1.321686
+#> 3   -1.0942209 -0.8623434 -0.9683822 -1.321686
+#> 4   -1.4844681 -0.8623434 -0.9683822 -1.321686
+#> 5   -1.7111136 -0.8623434 -0.9683822 -1.321686
+#> 6   -1.9517920 -0.8623434 -0.9683822 -1.321686
+#> 7   -0.5850075 -0.8623434 -0.9683822 -1.321686
+#> 8   -0.8213350 -0.8623434 -0.9683822 -1.321686
+#> 9   -1.7818226 -0.8623434 -0.9683822 -1.321686
+#> 10  -2.0791240 -0.8623434 -0.9683822 -1.321686
+#> 11  -1.6165764 -0.8623434 -0.9683822 -1.321686
+#> 12  -1.5678127 -0.8623434 -0.9683822 -1.321686
+#> 13  -2.2565112 -0.8623434 -0.9683822 -1.321686
+#> 14  -0.4528078 -0.8623434 -0.9683822 -1.321686
+#> 15  -2.0821850 -0.8623434 -0.9683822 -1.321686
 #> 
 #> attr(,"class")
 #> [1] "coef.mer"
@@ -522,18 +520,18 @@ draw_coef(m2, 100) %>%
   select(.draw, .group_var, .group, .fixef_parameter, .total) %>% 
   tidyr::spread(.fixef_parameter, .total)
 #> # A tibble: 1,500 x 7
-#>    .draw .group_var .group `(Intercept)`   period2   period3   period4
-#>  * <int>      <chr>  <chr>         <dbl>     <dbl>     <dbl>     <dbl>
-#>  1     1       herd      1    -0.7951965 -1.142092 -1.033629 -1.900248
-#>  2     1       herd     10    -2.0308748 -1.142092 -1.033629 -1.900248
-#>  3     1       herd     11    -0.9627433 -1.142092 -1.033629 -1.900248
-#>  4     1       herd     12    -2.3796051 -1.142092 -1.033629 -1.900248
-#>  5     1       herd     13    -2.1757593 -1.142092 -1.033629 -1.900248
-#>  6     1       herd     14    -0.3619617 -1.142092 -1.033629 -1.900248
-#>  7     1       herd     15    -1.4694316 -1.142092 -1.033629 -1.900248
-#>  8     1       herd      2    -1.6140949 -1.142092 -1.033629 -1.900248
-#>  9     1       herd      3    -1.3508801 -1.142092 -1.033629 -1.900248
-#> 10     1       herd      4    -0.9866125 -1.142092 -1.033629 -1.900248
+#>    .draw .group_var .group `(Intercept)`    period2    period3    period4
+#>  * <int>      <chr>  <chr>         <dbl>      <dbl>      <dbl>      <dbl>
+#>  1     1       herd      1    -1.6614772 -0.8450444 -0.8612593 -0.9988943
+#>  2     1       herd     10    -2.1102399 -0.8450444 -0.8612593 -0.9988943
+#>  3     1       herd     11    -1.2134057 -0.8450444 -0.8612593 -0.9988943
+#>  4     1       herd     12    -0.8685274 -0.8450444 -0.8612593 -0.9988943
+#>  5     1       herd     13    -2.2248655 -0.8450444 -0.8612593 -0.9988943
+#>  6     1       herd     14    -0.4510703 -0.8450444 -0.8612593 -0.9988943
+#>  7     1       herd     15    -2.4719634 -0.8450444 -0.8612593 -0.9988943
+#>  8     1       herd      2    -1.5590489 -0.8450444 -0.8612593 -0.9988943
+#>  9     1       herd      3    -0.5611966 -0.8450444 -0.8612593 -0.9988943
+#> 10     1       herd      4    -1.6242694 -0.8450444 -0.8612593 -0.9988943
 #> # ... with 1,490 more rows
 ```
 
@@ -612,16 +610,16 @@ m4 <- stan_glmer(
 ``` r
 VarCorr(m3)
 #>  Groups   Name        Std.Dev. Corr 
-#>  Subject  (Intercept) 85793.6       
-#>           Days        67580.4  0.551
-#>  Residual              4494.7
+#>  Subject  (Intercept) 8116.1        
+#>           Days        5426.2   0.128
+#>  Residual             1351.4
 
 as.data.frame(VarCorr(m3))
-#>        grp        var1 var2       vcov        sdcor
-#> 1  Subject (Intercept) <NA> 7360535973 8.579357e+04
-#> 2  Subject        Days <NA> 4567104806 6.758036e+04
-#> 3  Subject (Intercept) Days 3194777937 5.510176e-01
-#> 4 Residual        <NA> <NA>   20202148 4.494680e+03
+#>        grp        var1 var2     vcov        sdcor
+#> 1  Subject (Intercept) <NA> 65871265 8116.1114205
+#> 2  Subject        Days <NA> 29443287 5426.1669244
+#> 3  Subject (Intercept) Days  5645130    0.1281837
+#> 4 Residual        <NA> <NA>  1826242 1351.3853075
 ```
 
 In this function we compute the sd-cor matrix for each posterior sample.
@@ -673,6 +671,10 @@ ggplot(cors) +
                fun.args = list(conf.int = .5), show.legend = FALSE,
                position = position_dodge(-.8)) + 
   coord_flip() + 
+  facet_wrap(".parameter") +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank()) + 
   labs(x = NULL, y = "correlation", color = "prior") + 
   ggtitle("Degrees of regularization with LKJ prior")
 #> Warning: position_dodge requires non-overlapping x intervals
