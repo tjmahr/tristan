@@ -140,11 +140,25 @@ create_one_etdi_df_from_matrix <- function(x, prob) {
 
 set_colnames <- `colnames<-`
 
-tidy_median <- function(x) {
-
-}
 
 
+
+# test_spin <- function(x, prob = .9) {
+#   x %>%
+#     as.matrix() %>%
+#     apply(2, just_spin, conf = prob) %>%
+#     t() %>%
+#     as.data.frame() %>%
+#     set_colnames(c("lower", "upper")) %>%
+#     tibble::rownames_to_column("term") %>%
+#     tibble::as_tibble()  %>%
+#     dplyr::mutate_(density = ~ prob, interval = ~ "SPIn") %>%
+#     dplyr::select_(~ term, ~ interval, ~ density, ~ lower, ~ upper)
+# }
+#
+# just_spin <- function(x, ...) {
+#   SPIn::SPIn(x, ...)[["spin"]]
+# }
 
 #' Calculate the median for posterior samples
 #' @inheritParams posterior-intervals
