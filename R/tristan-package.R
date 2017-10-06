@@ -1,7 +1,7 @@
 #' Tristan's helper functions for RStanARM models and MCMC samples
 #'
 #' @name tristan
-#' @import rlang
+#' @import rlang dplyr
 #' @docType package
 NULL
 
@@ -17,7 +17,6 @@ NULL
 
 
 #' Create a long data-frame of posterior predictions
-#'
 #'
 #' These functions are wrapper around RStanARM's prediction functions that
 #' return a long tidy dataframe of model predictions.
@@ -46,77 +45,30 @@ NULL
 
 #' @export
 #' @rdname augment_posterior
-augment_posterior_predict <- function(model, newdata = NULL, ..., nsamples = NULL) {
-  if (is.null(newdata)) {
-    newdata <- model$data
-  }
-
-  # Number the observations in the data
-  newdata[[".observation"]] <- seq_len(nrow(newdata))
-
-  # Figure out which observations the model will handle by adding the
-  # observation ID to the model formula
-  temp <- modelr::add_predictors(stats::formula(model), ~ .observation)
-
-  if (inherits(model, "lmerMod")) {
-    merform <- imitate_mer_formula(temp, model, newdata)
-    model_ready_data <- merform$fr
-  } else {
-    # Outcome variable not required
-    temp[2] <- NULL
-    model_ready_data <- model.frame(temp, newdata)
-  }
-
-  # Keep only observations that the model can handle
-  preddata <- newdata[newdata$.observation %in% model_ready_data$.observation, ]
-
-  # Do the predictions
+augment_posterior_predict <- function(model, newdata = NULL, ...,
+                                      nsamples = NULL) {
+  preddata <- prepare_pred_data(model, newdata)
   preds <- rstanarm::posterior_predict(model, newdata = preddata,
                                        draws = nsamples, ...)
-  long_preds <- reshape2::melt(
-    data = preds,
-    varnames = c(".draw", ".observation"),
-    value.name = ".posterior_value")
-
-  long_preds <- long_preds[c(".observation", ".draw", ".posterior_value")]
-  long_preds_w_data <- merge(long_preds, preddata, by = ".observation")
-  tibble::as.tibble(long_preds_w_data)
+  preds %>%
+    reshape2::melt(varnames = c(".draw", ".observation"),
+                   value.name = ".posterior_value") %>%
+    select(one_of(c(".observation", ".draw", ".posterior_value"))) %>%
+    inner_join(preddata, by = ".observation") %>%
+    arrange(.data$.observation, .data$.draw) %>%
+    tibble::as.tibble()
 }
 
 #' @export
 #' @rdname augment_posterior
-augment_posterior_linpred <- function(model, newdata = NULL, ..., nsamples = NULL) {
-  if (is.null(newdata)) {
-    newdata <- model$data
-  }
-
-  # Number the observations in the data
-  newdata[[".observation"]] <- seq_len(nrow(newdata))
-
-  # Figure out which observations the model will handle by adding the
-  # observation ID to the model formula
-  temp <- modelr::add_predictors(stats::formula(model), ~ .observation)
-
-  if (inherits(model, "lmerMod")) {
-    merform <- imitate_mer_formula(temp, model, newdata)
-    model_ready_data <- merform$fr
-  } else {
-    # Outcome variable not required
-    temp[2] <- NULL
-    model_ready_data <- model.frame(temp, newdata)
-  }
-
-  # Keep only obersvations that the model can handle
-  preddata <- newdata[newdata$.observation %in% model_ready_data$.observation, ]
-
-  # Do the predictions
+augment_posterior_linpred <- function(model, newdata = NULL, ...,
+                                      nsamples = NULL) {
+  preddata <- prepare_pred_data(model, newdata)
   preds <- rstanarm::posterior_linpred(model, newdata = preddata, ...)
-  long_preds <- reshape2::melt(
-    data = preds,
-    varnames = c(".draw", ".observation"),
-    value.name = ".posterior_value")
-
-  long_preds <- long_preds[c(".observation", ".draw", ".posterior_value")]
+  long_preds <- preds %>%
+    reshape2::melt(varnames = c(".draw", ".observation"),
+                   value.name = ".posterior_value") %>%
+    select(one_of(c(".observation", ".draw", ".posterior_value")))
 
   if (!is.null(nsamples)) {
     samples <- sample(unique(long_preds$.draw), size = nsamples)
@@ -125,28 +77,39 @@ augment_posterior_linpred <- function(model, newdata = NULL, ..., nsamples = NUL
     long_preds$.draw <- match(long_preds$.draw, samples)
   }
 
-  long_preds_w_data <- merge(long_preds, preddata, by = ".observation")
-  long_preds_w_data <- dplyr::arrange_(long_preds_w_data,
-                                       ~ .observation, ~ .draw)
-  tibble::as.tibble(long_preds_w_data)
+  long_preds %>%
+    inner_join(preddata, by = ".observation") %>%
+    arrange(.data$.observation, .data$.draw) %>%
+    tibble::as.tibble()
 }
 
-imitate_mer_formula <- function(formula, model, data, ...) {
-  if (length(model$weights) == 0) {
-    model$weights <- NULL
+
+prepare_pred_data <- function(model, newdata = NULL) {
+  if (is.null(newdata)) {
+    newdata <- model$data
   }
 
-  args <- list(
-    formula = formula,
-    data = data,
-    family = model$family,
-    control = lme4::glmerControl(check.nlev.gtr.1 = "ignore",
-                                 check.rankX = "ignore"))
-  args <- c(args, offset = model$offset,
-            contrasts = model$contrasts,
-            weights = model$weights)
- do.call(lme4::glFormula, args)
+  # Number the observations in the data
+  newdata[[".observation"]] <- seq_len(nrow(newdata))
+
+  # Figure out which observations the model will handle by adding the
+  # observation ID to the model formula
+  temp <- modelr::add_predictors(stats::formula(model), ~ .observation)
+
+  # Simplify any random-effect subformulas
+  temp <- lme4::subbars(temp)
+
+  # Don't need y values
+  temp[2] <- NULL
+  model_ready_data <- model.frame(temp, newdata)
+
+  # Keep only obersvations that the model can generate new predictions for
+  newdata[newdata$.observation %in% model_ready_data$.observation, ]
 }
+
+
+
+
 
 #' Create tidy dataframe for ggmcmc from an RStanARM model
 #'

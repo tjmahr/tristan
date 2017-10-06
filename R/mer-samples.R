@@ -147,7 +147,7 @@ draw_var_corr <- function(model, nsamples = NULL) {
     lapply(as.data.frame) %>%
     purrr::map2_dfr(to_sample,
                     ~ tibble::add_column(.x, .draw = .y, .before = 0)) %>%
-    as_tibble()
+    tibble::as_tibble()
 
   long_vcov <- post_matrix %>%
     reshape2::melt(varnames = c(".draw", ".parameter"), value.name = "vcov")
