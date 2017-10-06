@@ -1,8 +1,9 @@
 #' Draw posterior samples from mixed effects models
 #'
 #' `draw_fixef()`, `draw_ranef()`, and `draw_coef()` are analogous to the
-#' functions [lme4::fixef()], [lme4::ranef()], and [lme4::coef()] expect that
-#' they return a tidy data-frame and return posterior samples.
+#' functions [lme4::fixef()], [lme4::ranef()], and
+#' [`lme4:::coef.merMod()`][lme4::merMod-class] except that they return a tidy
+#' data-frame and return posterior samples.
 #'
 #' @param model a mixed effects model fit with rstanarm
 #' @param nsamples the number of posterior samples to draw. Defaults to all

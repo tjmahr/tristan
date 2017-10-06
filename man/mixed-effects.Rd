@@ -27,6 +27,7 @@ of a parameter.
 }
 \description{
 \code{draw_fixef()}, \code{draw_ranef()}, and \code{draw_coef()} are analogous to the
-functions \code{\link[lme4:fixef]{lme4::fixef()}}, \code{\link[lme4:ranef]{lme4::ranef()}}, and \code{\link[lme4:coef]{lme4::coef()}} expect that
-they return a tidy data-frame and return posterior samples.
+functions \code{\link[lme4:fixef]{lme4::fixef()}}, \code{\link[lme4:ranef]{lme4::ranef()}}, and
+\code{\link[lme4:merMod-class]{lme4:::coef.merMod()}} except that they return a tidy
+data-frame and return posterior samples.
 }

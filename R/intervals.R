@@ -146,8 +146,11 @@ tidy_median <- function(x) {
 
 
 
+#' Calculate the median for posterior samples
+#' @inheritParams posterior-intervals
+#' @return a data-frame (a [tibble::tibble()]) with the median values.
 #' @export
-tidy_median <- function(x, prob = .9) {
+tidy_median <- function(x) {
   UseMethod("tidy_median")
 }
 
@@ -183,6 +186,15 @@ create_median_df_from_matrix <- function(x) {
     mutate(est_type = "median")
 }
 
+#' Calculate two ETDI intervals
+#'
+#' This function helps create caterpillar plots.
+#' @inheritParams posterior-intervals
+#' @param prob_outer,prob_inner width of probability intervals
+#' @return a data-frame (a [tibble::tibble()]) of intervals. Contains columns
+#'   with the `term` name, `outer_density`/`inner_density`, and the
+#'   `outer_lower`/`inner_lower` and `inner_upper`/`outer_upper` values of the
+#'   interval.
 #' @export
 double_etdi <- function(x, prob_outer, prob_inner) {
   UseMethod("double_etdi")

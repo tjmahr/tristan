@@ -2,6 +2,7 @@
 #'
 #' @name tristan
 #' @import rlang dplyr
+#' @importFrom stats cov2cor median model.frame quantile
 #' @docType package
 NULL
 

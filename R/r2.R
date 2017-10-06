@@ -1,5 +1,8 @@
 
 
+#' Calculate classical r-squared from a model
+#' @param model an RStanARM model
+#' @return the rsquared value for each posterior sample
 #' @export
 calculate_model_r2 <- function(model) {
   fits <- rstanarm::posterior_linpred(model, transform = FALSE)
@@ -9,6 +12,10 @@ calculate_model_r2 <- function(model) {
   r2
 }
 
+#' Calculate classical r-squared from observations and predictions
+#' @param y_obs observed y values
+#' @param y_fits fitted y values
+#' @return the rsquared value
 #' @export
 calculate_r2 <- function(y_obs, y_fits) {
   stopifnot(length(y_obs) == length(y_fits))

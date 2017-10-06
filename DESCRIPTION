@@ -20,6 +20,9 @@ Imports:
     lazyeval,
     lme4,
     purrr,
-    tidyr
+    tidyr,
+    rlang,
+    magrittr,
+    stringr
 Roxygen: list(markdown = TRUE)
 Suggests: testthat
