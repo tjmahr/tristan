@@ -3,26 +3,29 @@ Title: Tristan's helper functions for RStanARM models and MCMC samples
 Version: 0.0.0.9000
 Authors@R: person("TJ", "Mahr", email = "tristan.mahr@gmail.com", role = c("aut", "cre"))
 Description: This package provides from helper functions for preparing posterior samples from Stan models.
-Depends: R (>= 3.4.0)
 License: GPL-3 + file LICENSE
-Encoding: UTF-8
-LazyData: true
-RoxygenNote: 6.0.1.9000
+Depends: 
+    R (>= 3.4.0)
 Imports: 
-    tibble,
-    reshape2,
-    modelr,
-    stats,
-    rstanarm,
-    ggmcmc,
-    dplyr,
     coda,
+    dplyr,
+    ggmcmc,
     lazyeval,
     lme4,
-    purrr,
-    tidyr,
-    rlang,
     magrittr,
-    stringr
+    modelr,
+    purrr,
+    reshape2,
+    rlang,
+    rstanarm,
+    stats,
+    stringr,
+    tibble,
+    tidyr
+Suggests: 
+    testthat
+ByteCompile: true
+Encoding: UTF-8
+LazyData: true
 Roxygen: list(markdown = TRUE)
-Suggests: testthat
+RoxygenNote: 6.0.1.9000
